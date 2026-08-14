@@ -1,3 +1,5 @@
+![.github — default community health files for uinaf repositories.](https://uinaf.dev/og/banner/github-defaults.png)
+
 # uinaf GitHub defaults
 
 Fallback community-health files for repositories owned by uinaf.
