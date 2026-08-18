@@ -10,6 +10,15 @@ name: Scan
 
 on:
   workflow_call:
+    inputs:
+      zizmor-args:
+        description: >-
+          Extra zizmor arguments for repositories with documented needs,
+          e.g. --no-online-audits when a workflow pins a private first-party
+          action whose tags the repository token cannot list.
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -73,7 +82,9 @@ jobs:
       - name: Audit workflow security
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ZIZMOR_EXTRA_ARGS: ${{ inputs.zizmor-args }}
         run: |
+          # $ZIZMOR_EXTRA_ARGS word-splits by design; it carries flags, not data.
           docker run --rm -e GH_TOKEN -v "$PWD:/repo" \
             ghcr.io/zizmorcore/zizmor@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284 \
-            /repo # 1.29.0
+            $ZIZMOR_EXTRA_ARGS /repo # 1.29.0
