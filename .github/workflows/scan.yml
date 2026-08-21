@@ -85,6 +85,7 @@ jobs:
           ZIZMOR_EXTRA_ARGS: ${{ inputs.zizmor-args }}
         run: |
           # $ZIZMOR_EXTRA_ARGS word-splits by design; it carries flags, not data.
+          # shellcheck disable=SC2086
           docker run --rm -e GH_TOKEN -v "$PWD:/repo" \
             ghcr.io/zizmorcore/zizmor@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284 \
             $ZIZMOR_EXTRA_ARGS /repo # 1.29.0
