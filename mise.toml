@@ -1,0 +1,16 @@
+[tools]
+actionlint = "1.7.12"
+"pipx:zizmor" = "1.29.0"
+
+[tasks.verify-actions]
+description = "Lint and audit the shared workflows"
+sources = [".github/**/*.yml", ".github/**/*.yaml"]
+run = '''
+actionlint
+zizmor .github/workflows
+'''
+
+[tasks.verify]
+description = "Verify changed organization policy"
+depends = ["verify-actions"]
+run = "git diff --check"
