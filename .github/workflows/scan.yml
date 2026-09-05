@@ -6,6 +6,8 @@
 # is a promise the registry can break, and each of these containers gets the
 # whole repository, one of them with a token.
 
+# The github context belongs to the caller, including in reusable workflows.
+# Public repositories use GitHub-hosted runners; private callers keep Blacksmith.
 name: Scan
 
 on:
@@ -26,7 +28,7 @@ permissions:
 jobs:
   gitleaks:
     name: Gitleaks
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ${{ github.event.repository.private && 'blacksmith-2vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -41,7 +43,7 @@ jobs:
 
   trufflehog:
     name: TruffleHog
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ${{ github.event.repository.private && 'blacksmith-2vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -56,7 +58,7 @@ jobs:
 
   actionlint:
     name: Actionlint
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ${{ github.event.repository.private && 'blacksmith-2vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -70,7 +72,7 @@ jobs:
 
   zizmor:
     name: Zizmor
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ${{ github.event.repository.private && 'blacksmith-2vcpu-ubuntu-2404' || 'ubuntu-24.04' }}
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
