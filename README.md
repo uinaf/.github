@@ -10,6 +10,10 @@ security, contribution, or pull-request guidance.
 The shared scan uses GitHub-hosted runners for public callers and Blacksmith
 for private callers. Runner selection follows the calling repository’s visibility.
 
+Renovate uses the shared organization preset and tracks the four scanner image
+tags and digests in `scan.yml`. Digest-only updates remain manual under that
+preset. Image tags provide update metadata; execution remains pinned by digest.
+
 ## Verify
 
 Run changed workflow checks locally with `mise run verify`. Before handoff, run
