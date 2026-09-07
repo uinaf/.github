@@ -38,8 +38,8 @@ jobs:
       - name: Scan Git history
         run: |
           docker run --rm --network none -v "$PWD:/repo:ro" \
-            zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
-            detect --source /repo --redact --no-banner --log-level error # v8.30.1
+            zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+            detect --source /repo --redact --no-banner --log-level error
 
   trufflehog:
     name: TruffleHog
@@ -53,8 +53,8 @@ jobs:
       - name: Scan for verified secrets
         run: |
           docker run --rm -v "$PWD:/repo:ro" \
-            trufflesecurity/trufflehog@sha256:ff4c95e9df7d645daf2140e3ca1039031c63106268d5fbb25feb43ceca1bcc33 \
-            git file:///repo --no-update --fail --results=verified # 3.97.0
+            trufflesecurity/trufflehog:3.97.0@sha256:ff4c95e9df7d645daf2140e3ca1039031c63106268d5fbb25feb43ceca1bcc33 \
+            git file:///repo --no-update --fail --results=verified
 
   actionlint:
     name: Actionlint
@@ -67,8 +67,8 @@ jobs:
       - name: Lint workflows
         run: |
           docker run --rm -v "$PWD:/repo" --workdir /repo \
-            rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
-            -color # 1.7.12
+            rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
+            -color
 
   zizmor:
     name: Zizmor
@@ -89,5 +89,5 @@ jobs:
           # $ZIZMOR_EXTRA_ARGS word-splits by design; it carries flags, not data.
           # shellcheck disable=SC2086
           docker run --rm -e GH_TOKEN -v "$PWD:/repo" \
-            ghcr.io/zizmorcore/zizmor@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284 \
-            $ZIZMOR_EXTRA_ARGS /repo # 1.29.0
+            ghcr.io/zizmorcore/zizmor:1.29.0@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284 \
+            $ZIZMOR_EXTRA_ARGS /repo
