@@ -28,8 +28,8 @@ authorize an exception.
 
 Before changing a rule, compare its checks and exceptions with the owning
 workflow or publishing contract. Preserve a before-state and review the exact
-change; verify live rules after a canary and after the rollout. Fleet inventories
-that include private repositories stay in their private policy owner.
+change; verify live rules after a canary and after the rollout. Keep fleet
+inventories that include private repositories in a private repository.
 
 ## Verify
 
