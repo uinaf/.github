@@ -7,8 +7,7 @@ Fallback community-health files for repositories owned by uinaf.
 Repository-local files take precedence when a project needs more specific
 security, contribution, or pull-request guidance.
 
-The shared scan uses GitHub-hosted runners for public callers and Blacksmith
-for private callers. Runner selection follows the calling repository’s visibility.
+The shared scan uses standard GitHub-hosted Ubuntu runners for every caller.
 
 Renovate uses the shared organization preset and tracks the four scanner image
 tags and digests in `scan.yml`. Digest-only updates remain manual under that
