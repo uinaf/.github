@@ -16,5 +16,7 @@
       "datasourceTemplate": "docker",
       "versioningTemplate": "docker"
     }
-  ]
+  ],
+  "platformAutomerge": true,
+  "automergeType": "pr"
 }
