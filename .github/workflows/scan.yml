@@ -35,9 +35,21 @@ jobs:
           fetch-depth: 0
       - name: Scan Git history
         run: |
-          docker run --rm --network none -v "$PWD:/repo:ro" \
+          set -eu
+          log="$(docker run --rm --network none -v "$PWD:/repo:ro" \
             zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
-            detect --source /repo --redact --no-banner --log-level info
+            detect --source /repo --redact --no-banner --log-level info 2>&1)" && status=0 || status=$?
+          printf '%s\n' "$log"
+          if [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
+          # gitleaks exits 0 after scanning nothing, so a shallow checkout or
+          # a bad mount would otherwise pass silently.
+          commits="$(printf '%s' "$log" | sed -n 's/.*[^0-9]\([0-9][0-9]*\) commits scanned.*/\1/p' | tail -1)"
+          if [ -z "${commits:-}" ] || [ "$commits" -eq 0 ]; then
+            echo "gitleaks scanned no commits" >&2
+            exit 1
+          fi
 
   trufflehog:
     name: TruffleHog
