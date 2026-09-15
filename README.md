@@ -7,7 +7,19 @@ Fallback community-health files for repositories owned by uinaf.
 Repository-local files take precedence when a project needs more specific
 security, contribution, or pull-request guidance.
 
-The shared scan uses standard GitHub-hosted Ubuntu runners for every caller.
+The shared scan runs on GitHub-hosted Ubuntu runners by default. Private
+callers pass the `runner` input, because GitHub-hosted Actions do not dispatch
+for private repositories under the organization's paid-usage budget:
+
+```yaml
+uses: uinaf/.github/.github/workflows/scan.yml@main
+with:
+  runner: "blacksmith-2vcpu-ubuntu-2404"
+```
+
+A caller declaring that label also needs `.github/actionlint.yaml` listing it,
+or the Actionlint job rejects its own workflows. Public callers omit the input
+and stay on free GitHub-hosted minutes.
 
 Renovate uses the shared organization preset and tracks the four scanner image
 tags and digests in `scan.yml`. Digest-only updates remain manual under that
