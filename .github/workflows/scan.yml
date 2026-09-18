@@ -35,6 +35,8 @@ permissions:
 jobs:
   gitleaks:
     name: Gitleaks
+    outputs:
+      workflows: ${{ steps.changes.outputs.workflows }}
     runs-on: ${{ inputs.runner }}
     timeout-minutes: 10
     steps:
@@ -42,12 +44,28 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+      - uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3.0.4
+        if: github.event_name == 'pull_request'
+        id: changes
+        with:
+          # Use the existing checkout; fork PRs need no additional permissions.
+          token: ''
+          filters: |
+            workflows:
+              - '.github/**'
+              - '**/action.yml'
+              - '**/action.yaml'
+              - '**/zizmor.yml'
+              - '**/zizmor.yaml'
+              - '**/.shellcheckrc'
       - name: Scan Git history
+        env:
+          LOG_OPTS: ${{ github.event_name == 'pull_request' && format('{0}..HEAD', github.event.pull_request.base.sha) || '--all' }}
         run: |
           set -eu
           log="$(docker run --rm --network none -v "$PWD:/repo:ro" \
             zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
-            detect --source /repo --redact --no-banner --log-level info 2>&1)" && status=0 || status=$?
+            detect --source /repo --log-opts="$LOG_OPTS" --redact --no-banner --log-level info 2>&1)" && status=0 || status=$?
           printf '%s\n' "$log"
           if [ "$status" -ne 0 ]; then
             exit "$status"
@@ -69,6 +87,8 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+      # TruffleHog stops at the base commit in traversal order; a PR range can
+      # miss older branch commits after base advances. Keep full history.
       - name: Scan for verified secrets
         run: |
           docker run --rm -v "$PWD:/repo:ro" \
@@ -77,6 +97,9 @@ jobs:
 
   actionlint:
     name: Actionlint
+    needs: gitleaks
+    # Fail open for lint selection when detection fails; Gitleaks remains red.
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.gitleaks.outputs.workflows != 'false') }}
     runs-on: ${{ inputs.runner }}
     timeout-minutes: 5
     steps:
@@ -91,6 +114,9 @@ jobs:
 
   zizmor:
     name: Zizmor
+    needs: gitleaks
+    # Fail open for lint selection when detection fails; Gitleaks remains red.
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.gitleaks.outputs.workflows != 'false') }}
     runs-on: ${{ inputs.runner }}
     timeout-minutes: 5
     steps:
