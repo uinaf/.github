@@ -44,20 +44,23 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-      - uses: dorny/paths-filter@0e4a8c6effa4802afeda77dc8d303f8176d7dfad # v3.0.4
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         if: github.event_name == 'pull_request'
         id: changes
         with:
-          # Use the existing checkout; fork PRs need no additional permissions.
-          token: ''
-          filters: |
-            workflows:
-              - '.github/**'
-              - '**/action.yml'
-              - '**/action.yaml'
-              - '**/zizmor.yml'
-              - '**/zizmor.yaml'
-              - '**/.shellcheckrc'
+          script: |
+            const base = context.payload.pull_request.base.sha;
+            if (!/^[0-9a-f]{40}$/.test(base)) {
+              throw new Error('Invalid pull request base SHA');
+            }
+            const { stdout } = await exec.getExecOutput('git', [
+              'diff', '--name-only', '-z', '--no-renames', `${base}...HEAD`, '--',
+            ], { silent: true });
+            const workflows = stdout.split('\0').some(path =>
+              path.startsWith('.github/') ||
+              /(^|\/)(action\.ya?ml|\.?zizmor\.ya?ml|\.shellcheckrc)$/.test(path)
+            );
+            core.setOutput('workflows', String(workflows));
       - name: Scan Git history
         env:
           LOG_OPTS: ${{ github.event_name == 'pull_request' && format('{0}..HEAD', github.event.pull_request.base.sha) || '--all' }}

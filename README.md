@@ -27,7 +27,9 @@ its range traversal can stop before older PR commits when the base advances.
 Actionlint and Zizmor
 allocate runners only when a PR changes `.github/`, action metadata, Zizmor
 configuration, or ShellCheck configuration; weekly and manual runs always lint.
-Path detection reuses the Gitleaks checkout and runner. Detection failures fail
+Path detection uses a GitHub-owned action and reuses the Gitleaks checkout and
+runner. Shared workflow dependencies must remain compatible with adopters’
+selected-action policies without new permission exceptions. Detection failures fail
 Gitleaks and still run both linters. Required check names remain unchanged;
 job-level skips report success without allocating a runner.
 
