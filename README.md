@@ -70,9 +70,9 @@ publisher configuration checks the calling workflow's name. The App client id
 and private key live on the caller's `release` Environment. A caller cannot
 pass an Environment secret through `workflow_call`; it passes the name, and
 the shared job, bound to the same Environment, receives the Environment's
-value. Runners stay GitHub-hosted for private callers too: npm trusted
-publishing supports GitHub-hosted runners only, and self-hosted runners,
-Blacksmith included, are unsupported.
+value. npm trusted publishing supports GitHub-hosted runners only, so the
+release job stays GitHub-hosted in repositories that otherwise run on
+Blacksmith.
 
 Inputs, all optional: `runner`, `ref` (defaults to the triggering commit),
 `node-version-file`, `semantic-version`, `extra-plugins` (newline-separated,
