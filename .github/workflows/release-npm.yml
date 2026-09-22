@@ -4,8 +4,11 @@
 # their own workflow filename, because npm's trusted publisher configuration
 # checks the calling workflow's name, not this file.
 #
-# Both the caller job and this job need `id-token: write`; the caller passes
-# the App private key explicitly. Nothing here reads a registry token.
+# Both the caller job and this job need `id-token: write`. The App client id
+# and private key live on each repository's `release` Environment, which a
+# caller cannot pass through `workflow_call`, so this job binds that
+# Environment and reads them itself; callers use `secrets: inherit`. Nothing
+# here reads a registry token.
 
 name: Release npm package
 
@@ -28,10 +31,6 @@ on:
         type: string
         required: false
         default: ".node-version"
-      app-client-id:
-        description: Client id of the GitHub App that signs release writes.
-        type: string
-        required: true
       semantic-version:
         description: semantic-release version to run.
         type: string
@@ -63,10 +62,6 @@ on:
         type: string
         required: false
         default: "."
-    secrets:
-      app-private-key:
-        description: Private key of the GitHub App named by app-client-id.
-        required: true
 
 permissions: {}
 
@@ -121,8 +116,8 @@ jobs:
         id: release-bot
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          client-id: ${{ inputs.app-client-id }}
-          private-key: ${{ secrets.app-private-key }}
+          client-id: ${{ vars.UINAF_CI_APP_CLIENT_ID }}
+          private-key: ${{ secrets.UINAF_CI_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
           permission-contents: write
