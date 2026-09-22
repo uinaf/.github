@@ -14,9 +14,9 @@ on:
       runner:
         description: >-
           Runner label for every scan job. Private repositories override this
-          with a Blacksmith label, because GitHub-hosted Actions are disabled
-          for them while the account payment failure stands. Public repositories
-          keep the GitHub-hosted default, where Actions minutes are free.
+          with a Blacksmith label, because GitHub-hosted Actions do not dispatch
+          for them under the organization's paid-usage budget. Public
+          repositories keep the GitHub-hosted default, where minutes are free.
         type: string
         required: false
         default: "ubuntu-24.04"

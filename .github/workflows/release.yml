@@ -19,6 +19,7 @@ jobs:
     timeout-minutes: 10
     environment:
       name: release
+      deployment: false
     concurrency:
       group: release-${{ github.repository }}-main
       cancel-in-progress: false

@@ -129,8 +129,9 @@ jobs:
           repositories: ${{ github.event.repository.name }}
           permission-contents: write
           # @semantic-release/github comments on and labels referenced issues
-          # and pull requests after publishing; without these the release
-          # succeeds and the job fails.
+          # and pull requests after publishing unless the caller's .releaserc
+          # disables that; without these scopes the release succeeds and the
+          # job fails.
           permission-issues: write
           permission-pull-requests: write
       - name: Authorize release writes

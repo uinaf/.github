@@ -18,4 +18,5 @@ jobs:
   scan:
     permissions:
       contents: read
-    uses: ./.github/workflows/scan.yml
+    # actionlint 1.7.12 rejects the `$/` self-repository syntax zizmor prefers.
+    uses: ./.github/workflows/scan.yml # zizmor: ignore[self-repository]
