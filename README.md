@@ -36,7 +36,9 @@ Gitleaks and still run both linters. Required check names remain unchanged;
 job-level skips report success without allocating a runner.
 
 Renovate uses the shared organization preset and tracks the four scanner image
-tags and digests in `scan.yml`. Digest-only updates remain manual under that
+tags and digests in `scan.yml`. Zizmor stays at 1.28.0 or newer: 1.27.0 logs
+its parsed config, `GH_TOKEN` included, under verbose output
+(GHSA-f42p-wjw5-97qh). Digest-only updates remain manual under that
 preset. Image tags provide update metadata; execution remains pinned by digest.
 
 ## Pinning
