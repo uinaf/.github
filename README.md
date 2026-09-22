@@ -12,7 +12,7 @@ callers may pass the `runner` input when GitHub-hosted Actions do not dispatch
 for them under the organization's paid-usage budget:
 
 ```yaml
-uses: uinaf/.github/.github/workflows/scan.yml@ce25bc56a1a5c182e8bef402b3eceaca331608a1 # v1.0.1
+uses: uinaf/.github/.github/workflows/scan.yml@168dfda80c93edc6c7085675e0982e32e2229c97 # v1.0.2
 with:
   runner: "blacksmith-2vcpu-ubuntu-2404"
 ```
@@ -50,7 +50,7 @@ comment, and the [shared Renovate preset](https://github.com/uinaf/renovate-conf
 moves the pins:
 
 ```yaml
-uses: uinaf/.github/.github/workflows/scan.yml@ce25bc56a1a5c182e8bef402b3eceaca331608a1 # v1.0.1
+uses: uinaf/.github/.github/workflows/scan.yml@168dfda80c93edc6c7085675e0982e32e2229c97 # v1.0.2
 ```
 
 Zizmor's `ref-version-mismatch` audit fails a pin whose comment names a
@@ -90,7 +90,7 @@ release:
   permissions:
     contents: read
     id-token: write
-  uses: uinaf/.github/.github/workflows/release-npm.yml@ce25bc56a1a5c182e8bef402b3eceaca331608a1 # v1.0.1
+  uses: uinaf/.github/.github/workflows/release-npm.yml@168dfda80c93edc6c7085675e0982e32e2229c97 # v1.0.2
   secrets:
     UINAF_CI_APP_PRIVATE_KEY: ${{ secrets.UINAF_CI_APP_PRIVATE_KEY }}
 ```
