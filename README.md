@@ -70,7 +70,7 @@ release:
   permissions:
     contents: read
     id-token: write
-  uses: uinaf/.github/.github/workflows/release-npm.yml@main
+  uses: uinaf/.github/.github/workflows/release-npm.yml@273d0888178ba4795605c440bef144d8882331fc # v1.0.0
   secrets:
     UINAF_CI_APP_PRIVATE_KEY: ${{ secrets.UINAF_CI_APP_PRIVATE_KEY }}
 ```
