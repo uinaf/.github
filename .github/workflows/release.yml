@@ -42,6 +42,10 @@ jobs:
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
           permission-contents: write
+      - name: Authorize tag writes
+        env:
+          GH_TOKEN: ${{ steps.release-bot.outputs.token }}
+        run: gh auth setup-git
       - id: release
         uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6.0.0
         with:
