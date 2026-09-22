@@ -106,10 +106,10 @@ downstream `if:` conditions keep boolean names.
 
 ## Default-branch checks
 
-Repositories ready for immediate GitHub-native Renovate automerge opt in with
-`platformAutomerge: true` and an active `default-branch-checks` ruleset. The
-[shared preset](https://github.com/uinaf/renovate-config) keeps this opt-in off
-by default. Update eligibility and release age remain preset-owned.
+The [shared preset](https://github.com/uinaf/renovate-config) enables
+GitHub-native Renovate automerge; each repository keeps an active
+`default-branch-checks` ruleset. Update eligibility and release age remain
+preset-owned.
 
 Required checks constrain every update to the default branch, including direct
 pushes. Approved content and release writers need repository-specific exceptions
