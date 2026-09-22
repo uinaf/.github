@@ -8,8 +8,8 @@ Repository-local files take precedence when a project needs more specific
 security, contribution, or pull-request guidance.
 
 The shared scan runs on GitHub-hosted Ubuntu runners by default. Private
-callers pass the `runner` input, because GitHub-hosted Actions do not dispatch
-for private repositories under the organization's paid-usage budget:
+callers may pass the `runner` input when GitHub-hosted Actions do not dispatch
+for them under the organization's paid-usage budget:
 
 ```yaml
 uses: uinaf/.github/.github/workflows/scan.yml@273d0888178ba4795605c440bef144d8882331fc # v1.0.0
