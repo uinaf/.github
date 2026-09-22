@@ -5,10 +5,11 @@
 # checks the calling workflow's name, not this file.
 #
 # Both the caller job and this job need `id-token: write`. The App client id
-# and private key live on each repository's `release` Environment, which a
-# caller cannot pass through `workflow_call`, so this job binds that
-# Environment and reads them itself; callers use `secrets: inherit`. Nothing
-# here reads a registry token.
+# and private key live on each repository's `release` Environment. A caller
+# cannot pass an Environment secret through `workflow_call`; it passes the
+# name, and because this job binds the `release` Environment, GitHub supplies
+# the Environment's value in place of whatever the caller had. Nothing here
+# reads a registry token.
 
 name: Release npm package
 
@@ -62,6 +63,12 @@ on:
         type: string
         required: false
         default: "."
+    secrets:
+      UINAF_CI_APP_PRIVATE_KEY:
+        description: >-
+          Private key of the uinaf-ci App. Pass it by name; the value that
+          reaches this job is the caller's release Environment secret.
+        required: true
 
 permissions: {}
 
