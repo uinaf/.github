@@ -7,7 +7,6 @@ description = "Lint and audit the shared workflows"
 sources = [".github/**/*.yml", ".github/**/*.yaml"]
 run = '''
 actionlint
-# Online audits (ref-version-mismatch among them) need a token, as in CI.
 GH_TOKEN="${GH_TOKEN:-$(gh auth token)}" zizmor .github/workflows .github/actions
 '''
 

@@ -1,7 +1,5 @@
 name: Scan
 
-# No push trigger: pull requests scan the same tree before merge and the
-# weekly schedule covers history.
 on:
   pull_request:
   schedule:
@@ -18,5 +16,4 @@ jobs:
   scan:
     permissions:
       contents: read
-    # actionlint 1.7.12 rejects the `$/` self-repository syntax zizmor prefers.
     uses: ./.github/workflows/scan.yml # zizmor: ignore[self-repository]
