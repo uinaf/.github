@@ -66,14 +66,15 @@ jobs:
           if [ "$status" -ne 0 ]; then
             exit "$status"
           fi
-          # Gitleaks skips commits that add no lines, such as renames and deletions.
-          # shellcheck disable=SC2086
-          added="$(git log --numstat --format= --find-renames $LOG_OPTS | awk '$1 != "-" { n += $1 } END { print n + 0 }')"
-          if [ "$added" -eq 0 ]; then
+          commits="$(printf '%s' "$log" | sed -n 's/.*[^0-9]\([0-9][0-9]*\) commits scanned.*/\1/p' | tail -1)"
+          if [ -n "${commits:-}" ] && [ "$commits" -gt 0 ]; then
             exit 0
           fi
-          commits="$(printf '%s' "$log" | sed -n 's/.*[^0-9]\([0-9][0-9]*\) commits scanned.*/\1/p' | tail -1)"
-          if [ -z "${commits:-}" ] || [ "$commits" -eq 0 ]; then
+          # Gitleaks skips commits that add no text lines, such as renames, deletions,
+          # and binary changes.
+          # shellcheck disable=SC2086
+          added="$(git log --numstat --format= --find-renames $LOG_OPTS | awk '$1 != "-" { n += $1 } END { print n + 0 }')"
+          if [ "$added" -gt 0 ]; then
             echo "gitleaks scanned no commits" >&2
             exit 1
           fi
