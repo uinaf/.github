@@ -58,13 +58,19 @@ jobs:
         env:
           LOG_OPTS: ${{ github.event_name == 'pull_request' && format('{0}..HEAD', github.event.pull_request.base.sha) || '--all' }}
         run: |
-          set -eu
+          set -euo pipefail
           log="$(docker run --rm --network none -v "$PWD:/repo:ro" \
             zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
             detect --source /repo --log-opts="$LOG_OPTS" --redact --no-banner --log-level info 2>&1)" && status=0 || status=$?
           printf '%s\n' "$log"
           if [ "$status" -ne 0 ]; then
             exit "$status"
+          fi
+          # Gitleaks skips commits that add no lines, such as renames and deletions.
+          # shellcheck disable=SC2086
+          added="$(git log --numstat --format= --find-renames $LOG_OPTS | awk '$1 != "-" { n += $1 } END { print n + 0 }')"
+          if [ "$added" -eq 0 ]; then
+            exit 0
           fi
           commits="$(printf '%s' "$log" | sed -n 's/.*[^0-9]\([0-9][0-9]*\) commits scanned.*/\1/p' | tail -1)"
           if [ -z "${commits:-}" ] || [ "$commits" -eq 0 ]; then
