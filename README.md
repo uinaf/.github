@@ -37,6 +37,38 @@ Renovate uses the shared organization preset and tracks the four scanner image
 tags and digests in `scan.yml`. Digest-only updates remain manual under that
 preset. Image tags provide update metadata; execution remains pinned by digest.
 
+## Release
+
+[`release-npm.yml`](.github/workflows/release-npm.yml) publishes an npm package
+with semantic-release and npm trusted publishing. The caller keeps its own
+verify and scan jobs and its own workflow filename, because npm's trusted
+publisher configuration checks the calling workflow's name. The App client id
+and private key live on the caller's `release` Environment. A caller cannot
+pass an Environment secret through `workflow_call`; it passes the name, and
+the shared job, bound to the same Environment, receives the Environment's
+value. Runners stay GitHub-hosted for private callers too, because trusted
+publishing accepts cloud-hosted runners only.
+
+```yaml
+release:
+  needs: [verify, scan]
+  permissions:
+    contents: read
+    id-token: write
+  uses: uinaf/.github/.github/workflows/release-npm.yml@main
+  secrets:
+    UINAF_CI_APP_PRIVATE_KEY: ${{ secrets.UINAF_CI_APP_PRIVATE_KEY }}
+```
+
+## Changed paths
+
+[`actions/changes`](.github/actions/changes/action.yml) runs `paths-filter`
+with the checkout each event needs and accepts inline filters only, so a pull
+request cannot edit its own lane selection. Private callers set
+`full-history: "true"`. The action returns matched filter names as a JSON
+array; map them to job outputs with `contains(fromJSON(...), 'name')` so
+downstream `if:` conditions keep boolean names.
+
 ## Default-branch checks
 
 Repositories ready for immediate GitHub-native Renovate automerge opt in with
