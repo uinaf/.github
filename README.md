@@ -64,7 +64,10 @@ release:
 
 [`actions/changes`](.github/actions/changes/action.yml) runs `paths-filter`
 with the checkout each event needs and accepts inline filters only, so a pull
-request cannot edit its own lane selection. Private callers set
+request cannot edit its own lane selection. Callers pin it to a full commit
+SHA: the organization's Actions policy rejects branch references for actions,
+though not for reusable workflows, and Renovate leaves `uinaf/.github`
+references alone, so the pin moves only by hand. Private callers set
 `full-history: "true"`. The action returns matched filter names as a JSON
 array; map them to job outputs with `contains(fromJSON(...), 'name')` so
 downstream `if:` conditions keep boolean names.
