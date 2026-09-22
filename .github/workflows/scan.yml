@@ -1,10 +1,3 @@
-# Shared scan baseline for uinaf repositories: secret scanning plus workflow
-# lint. Repositories call this with a thin caller workflow; version bumps and
-# digest pins change here, once.
-#
-# Every image is pinned by digest, not tag. A tag is mutable, so a version tag
-# is a promise the registry can break, and each of these containers gets the
-# whole repository, one of them with a token.
 
 name: Scan
 
@@ -73,8 +66,6 @@ jobs:
           if [ "$status" -ne 0 ]; then
             exit "$status"
           fi
-          # gitleaks exits 0 after scanning nothing, so a shallow checkout or
-          # a bad mount would otherwise pass silently.
           commits="$(printf '%s' "$log" | sed -n 's/.*[^0-9]\([0-9][0-9]*\) commits scanned.*/\1/p' | tail -1)"
           if [ -z "${commits:-}" ] || [ "$commits" -eq 0 ]; then
             echo "gitleaks scanned no commits" >&2
@@ -90,8 +81,6 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-      # TruffleHog stops at the base commit in traversal order; a PR range can
-      # miss older branch commits after base advances. Keep full history.
       - name: Scan for verified secrets
         run: |
           docker run --rm -v "$PWD:/repo:ro" \
@@ -101,7 +90,6 @@ jobs:
   actionlint:
     name: Actionlint
     needs: gitleaks
-    # Fail open for lint selection when detection fails; Gitleaks remains red.
     if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.gitleaks.outputs.workflows != 'false') }}
     runs-on: ${{ inputs.runner }}
     timeout-minutes: 5
@@ -118,7 +106,6 @@ jobs:
   zizmor:
     name: Zizmor
     needs: gitleaks
-    # Fail open for lint selection when detection fails; Gitleaks remains red.
     if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.gitleaks.outputs.workflows != 'false') }}
     runs-on: ${{ inputs.runner }}
     timeout-minutes: 5
@@ -126,15 +113,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # Keep this at 1.28.0 or newer. 1.27.0 is yanked for GHSA-f42p-wjw5-97qh:
-      # it logs the parsed config, the GH_TOKEN below included, once verbose
-      # output is on.
       - name: Audit workflow security
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ZIZMOR_EXTRA_ARGS: ${{ inputs.zizmor-args }}
         run: |
-          # $ZIZMOR_EXTRA_ARGS word-splits by design; it carries flags, not data.
           # shellcheck disable=SC2086
           docker run --rm -e GH_TOKEN -v "$PWD:/repo" \
             ghcr.io/zizmorcore/zizmor:1.29.0@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284 \
