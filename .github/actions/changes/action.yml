@@ -1,0 +1,39 @@
+name: Classify changed paths
+description: >-
+  Run dorny/paths-filter with the checkout it needs for the event. Pull
+  requests are classified through the API and get no checkout; push and
+  merge-group events get a default-depth checkout and the filter fetches the
+  base commit itself. The caller job needs `pull-requests: read` and, for
+  push events, `contents: read`.
+inputs:
+  filters:
+    description: Inline paths-filter YAML, or a repository path when checkout is forced.
+    required: true
+  full-history:
+    description: >-
+      Fetch full history on non-PR events. Set true for a private repository
+      whose checkout persists no credentials, because the filter's own fetch
+      then runs unauthenticated.
+    required: false
+    default: "false"
+  force-checkout:
+    description: Check out on pull requests too, for a filters file in the repository.
+    required: false
+    default: "false"
+outputs:
+  changes:
+    description: JSON array of filter names that matched.
+    value: ${{ steps.filter.outputs.changes }}
+runs:
+  using: composite
+  steps:
+    - name: Check out repository
+      if: github.event_name != 'pull_request' || inputs.force-checkout == 'true'
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+        fetch-depth: ${{ inputs.full-history == 'true' && '0' || '1' }}
+    - id: filter
+      uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+      with:
+        filters: ${{ inputs.filters }}
