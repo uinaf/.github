@@ -12,7 +12,7 @@ callers pass the `runner` input, because GitHub-hosted Actions do not dispatch
 for private repositories under the organization's paid-usage budget:
 
 ```yaml
-uses: uinaf/.github/.github/workflows/scan.yml@main
+uses: uinaf/.github/.github/workflows/scan.yml@273d0888178ba4795605c440bef144d8882331fc # v1.0.0
 with:
   runner: "blacksmith-2vcpu-ubuntu-2404"
 ```
@@ -36,6 +36,21 @@ job-level skips report success without allocating a runner.
 Renovate uses the shared organization preset and tracks the four scanner image
 tags and digests in `scan.yml`. Digest-only updates remain manual under that
 preset. Image tags provide update metadata; execution remains pinned by digest.
+
+## Pinning
+
+Every push to `main` that carries a releasable Conventional Commit tags a
+release ([`release.yml`](.github/workflows/release.yml)). Callers pin the
+workflows and the action to that release's commit with the tag as the version
+comment, and the [shared Renovate preset](https://github.com/uinaf/renovate-config)
+moves the pins:
+
+```yaml
+uses: uinaf/.github/.github/workflows/scan.yml@273d0888178ba4795605c440bef144d8882331fc # v1.0.0
+```
+
+Zizmor's `ref-version-mismatch` audit fails a pin whose comment names a
+branch that has since moved, so branch annotations such as `# main` are out.
 
 ## Release
 
@@ -64,10 +79,7 @@ release:
 
 [`actions/changes`](.github/actions/changes/action.yml) runs `paths-filter`
 with the checkout each event needs and accepts inline filters only, so a pull
-request cannot edit its own lane selection. Callers pin it to a full commit
-SHA: the organization's Actions policy rejects branch references for actions,
-though not for reusable workflows, and Renovate leaves `uinaf/.github`
-references alone, so the pin moves only by hand. Private callers set
+request cannot edit its own lane selection. Private callers set
 `full-history: "true"`. The action returns matched filter names as a JSON
 array; map them to job outputs with `contains(fromJSON(...), 'name')` so
 downstream `if:` conditions keep boolean names.
