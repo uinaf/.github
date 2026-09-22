@@ -1,7 +1,5 @@
 name: Scan
 
-# No push trigger: pull requests scan the same tree before merge and the
-# weekly schedule covers history.
 on:
   pull_request:
   schedule:
@@ -18,4 +16,4 @@ jobs:
   scan:
     permissions:
       contents: read
-    uses: ./.github/workflows/scan.yml
+    uses: ./.github/workflows/scan.yml # zizmor: ignore[self-repository]

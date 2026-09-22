@@ -19,7 +19,9 @@ with:
 
 A caller declaring that label also needs `.github/actionlint.yaml` listing it,
 or the Actionlint job rejects its own workflows. Public callers omit the input
-and stay on free GitHub-hosted minutes.
+and stay on free GitHub-hosted minutes. `zizmor-args` passes extra zizmor
+flags for a documented need, such as `--no-online-audits` when a workflow pins
+a private first-party action whose tags the repository token cannot list.
 
 Pull requests scan only commits outside the PR base with Gitleaks; its weekly
 and manual runs scan full history. TruffleHog retains full-history scans because
@@ -52,6 +54,13 @@ uses: uinaf/.github/.github/workflows/scan.yml@273d0888178ba4795605c440bef144d88
 Zizmor's `ref-version-mismatch` audit fails a pin whose comment names a
 branch that has since moved, so branch annotations such as `# main` are out.
 
+Compatibility: removing an input, adding a required input, renaming an output,
+or changing a default that alters caller behavior is a breaking change and
+ships as a major (`feat!:` or a `BREAKING CHANGE` footer). The preset
+automerges patch and minor pins only; majors wait for a human in each caller.
+This README describes `main`; read the tagged commit for the contract a given
+pin carries.
+
 ## Release
 
 [`release-npm.yml`](.github/workflows/release-npm.yml) publishes an npm package
@@ -61,8 +70,17 @@ publisher configuration checks the calling workflow's name. The App client id
 and private key live on the caller's `release` Environment. A caller cannot
 pass an Environment secret through `workflow_call`; it passes the name, and
 the shared job, bound to the same Environment, receives the Environment's
-value. Runners stay GitHub-hosted for private callers too, because trusted
-publishing accepts cloud-hosted runners only.
+value. Runners stay GitHub-hosted for private callers too: npm trusted
+publishing supports GitHub-hosted runners only, and self-hosted runners,
+Blacksmith included, are unsupported.
+
+Inputs, all optional: `runner`, `ref` (defaults to the triggering commit),
+`node-version-file`, `semantic-version`, `extra-plugins` (newline-separated,
+exact versions; the default set covers analysis, notes, npm, GitHub Release,
+and the Conventional Commits preset), `pack-command` with `working-directory`
+for packages whose publish does not build itself. The caller's `release`
+Environment must also define the `UINAF_CI_APP_CLIENT_ID` variable.
+semantic-release runs at the repository root.
 
 ```yaml
 release:
@@ -106,4 +124,4 @@ inventories that include private repositories in a private repository.
 
 Run changed workflow checks locally with `mise run verify`. Before handoff, run
 the exhaustive gate with `mise run --force verify`. The repository self-caller
-runs the shared scan workflow at the pull request's exact revision.
+runs the shared scan workflow at the pull request's merge commit.

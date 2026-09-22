@@ -1,21 +1,21 @@
 name: Classify changed paths
 description: >-
   Run dorny/paths-filter with the checkout it needs for the event. Pull
-  request events are classified through the API and get no checkout; push
-  and merge-group events get a default-depth checkout and the filter fetches
-  the base commit itself. Filters are inline YAML from the caller workflow,
+  request events are classified through the API and get no checkout; every
+  other event gets a default-depth checkout and the filter fetches the base
+  commit itself. Filters are inline YAML from the caller workflow,
   never a file from the checked-out tree, so a pull request cannot edit its
   own lane selection. The caller job needs `pull-requests: read`, and
-  `contents: read` whenever a checkout can run (push and merge-group events).
+  `contents: read` whenever a checkout can run (every non-PR event).
 inputs:
   filters:
     description: Inline paths-filter YAML.
     required: true
   full-history:
     description: >-
-      Fetch full history on non-PR events. Set true for a private repository
-      whose checkout persists no credentials, because the filter's own fetch
-      then runs unauthenticated.
+      Fetch full history on non-PR events. Required for a private repository
+      on every non-PR event, because the checkout persists no credentials and
+      the filter's own fetch of a missing base commit runs unauthenticated.
     required: false
     default: "false"
 outputs:
