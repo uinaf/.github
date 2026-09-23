@@ -7,27 +7,15 @@ Fallback community-health files for repositories owned by uinaf.
 Repository-local files take precedence when a project needs more specific
 security, contribution, or pull-request guidance.
 
-The shared scan runs on GitHub-hosted Ubuntu runners by default. Private
-callers may pass the `runner` input when GitHub-hosted Actions do not dispatch
-for them under the organization's paid-usage budget:
-
-```yaml
-uses: uinaf/.github/.github/workflows/scan.yml@168dfda80c93edc6c7085675e0982e32e2229c97 # v1.0.2
-with:
-  runner: "blacksmith-2vcpu-ubuntu-2404"
-```
-
-A caller declaring that label also needs `.github/actionlint.yaml` listing it,
-or the Actionlint job rejects its own workflows. Public callers omit the input
-and stay on free GitHub-hosted minutes. `zizmor-args` passes extra zizmor
-flags for a documented need, such as `--no-online-audits` when a workflow pins
-a private first-party action whose tags the repository token cannot list.
+The shared scan's inputs are documented in
+[`scan.yml`](.github/workflows/scan.yml). A caller passing a custom `runner`
+label also lists it in `.github/actionlint.yaml`, or the Actionlint job rejects
+its own workflows.
 
 Pull requests scan only commits outside the PR base with Gitleaks; its weekly
 and manual runs scan full history. TruffleHog retains full-history scans because
 its range traversal can stop before older PR commits when the base advances.
-Actionlint and Zizmor
-allocate runners only when a PR changes `.github/`, action metadata, Zizmor
+Actionlint and Zizmor allocate runners only when a PR changes `.github/`, action metadata, Zizmor
 configuration, or ShellCheck configuration; weekly and manual runs always lint.
 Path detection uses a GitHub-owned action and reuses the Gitleaks checkout and
 runner. Shared workflow dependencies must remain compatible with adopters’
@@ -36,10 +24,8 @@ Gitleaks and still run both linters. Required check names remain unchanged;
 job-level skips report success without allocating a runner.
 
 Renovate uses the shared organization preset and tracks the four scanner image
-tags and digests in `scan.yml`. Zizmor stays at 1.28.0 or newer: 1.27.0 logs
-its parsed config, `GH_TOKEN` included, under verbose output
-(GHSA-f42p-wjw5-97qh). Digest-only updates remain manual under that
-preset. Image tags provide update metadata; execution remains pinned by digest.
+tags and digests in `scan.yml`; Zizmor stays at 1.28.0 or newer
+(GHSA-f42p-wjw5-97qh). Digest-only updates remain manual under that preset. Image tags provide update metadata; execution remains pinned by digest.
 
 ## Pinning
 
@@ -76,11 +62,7 @@ value. npm trusted publishing supports GitHub-hosted runners only, so the
 release job stays GitHub-hosted in repositories that otherwise run on
 Blacksmith.
 
-Inputs, all optional: `runner`, `ref` (defaults to the triggering commit),
-`node-version-file`, `semantic-version`, `extra-plugins` (newline-separated,
-exact versions; the default set covers analysis, notes, npm, GitHub Release,
-and the Conventional Commits preset), `pack-command` with `working-directory`
-for packages whose publish does not build itself. The caller's `release`
+Inputs and defaults are documented in the workflow. The caller's `release`
 Environment must also define the `UINAF_CI_APP_CLIENT_ID` variable.
 semantic-release runs at the repository root.
 
@@ -106,21 +88,10 @@ downstream `if:` conditions keep boolean names.
 
 ## Default-branch checks
 
-The [shared preset](https://github.com/uinaf/renovate-config) enables
-GitHub-native Renovate automerge; each repository keeps an active
-`default-branch-checks` ruleset. Update eligibility and release age remain
-preset-owned.
-
 Required checks constrain every update to the default branch, including direct
-pushes. Approved content and release writers need repository-specific exceptions
-to the checks ruleset. Signing, deletion, and force-push protections remain in
-the separate organization baseline. An App's repository access alone does not
-authorize an exception.
-
-Before changing a rule, compare its checks and exceptions with the owning
-workflow or publishing contract. Preserve a before-state and review the exact
-change; verify live rules after a canary and after the rollout. Keep fleet
-inventories that include private repositories in a private repository.
+pushes. Rulesets and their bypasses are owned by `uinaf/infra` (`tofu/github`);
+approved writers need a recorded bypass in the ruleset covering their
+repository.
 
 ## Verify
 
