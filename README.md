@@ -15,8 +15,8 @@ its own workflows.
 Pull requests scan only commits outside the PR base with Gitleaks; its weekly
 and manual runs scan full history. TruffleHog retains full-history scans because
 its range traversal can stop before older PR commits when the base advances.
-Actionlint and Zizmor allocate runners only when a PR changes `.github/`, action metadata, Zizmor
-configuration, or ShellCheck configuration; weekly and manual runs always lint.
+Actionlint and Zizmor allocate runners only when a PR changes `.github/`,
+action metadata, Zizmor configuration, or ShellCheck configuration; weekly and manual runs always lint.
 Path detection uses a GitHub-owned action and reuses the Gitleaks checkout and
 runner. Shared workflow dependencies must remain compatible with adopters’
 selected-action policies without new permission exceptions. Detection failures fail
@@ -25,7 +25,8 @@ job-level skips report success without allocating a runner.
 
 Renovate uses the shared organization preset and tracks the four scanner image
 tags and digests in `scan.yml`; Zizmor stays at 1.28.0 or newer
-(GHSA-f42p-wjw5-97qh). Digest-only updates remain manual under that preset. Image tags provide update metadata; execution remains pinned by digest.
+(GHSA-f42p-wjw5-97qh). Digest-only updates remain manual under that preset.
+Image tags provide update metadata; execution remains pinned by digest.
 
 ## Pinning
 
