@@ -2,10 +2,9 @@ name: Scan
 description: >-
   Push-time secret and workflow scan, run as the last steps of a caller's
   existing verify job. On push it scans the pushed range; on workflow_dispatch
-  it scans full history; on every other event it does nothing, so it never
-  gates a pull request. Gitleaks runs on private repositories, where GitHub
-  push protection is unavailable. Actionlint and Zizmor run only when the
-  range changes workflows, action metadata, or their configuration.
+  it scans full history; every other event passes through. Gitleaks runs on
+  private repositories. Actionlint and Zizmor run when the range changes
+  workflows, action metadata, or their configuration.
 inputs:
   gitleaks:
     description: >-

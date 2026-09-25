@@ -11,22 +11,20 @@ security, contribution, or pull-request guidance.
 
 [`actions/scan`](.github/actions/scan/action.yml) is the push-time scan. Callers
 add it as the last step of their existing `verify` job, after a checkout, so it
-costs no runner of its own:
+shares that job's runner:
 
 ```yaml
 - uses: uinaf/.github/.github/actions/scan@<sha> # vX.Y.Z
 ```
 
-It acts only on `push` and `workflow_dispatch`; on pull requests it exits at
-once, so it never blocks a merge. Findings fail the pushed commit's `verify`
-run, and GitHub's failed-run email is the notification. No ruleset requires it
-to pass before a push.
+It scans on `push` and `workflow_dispatch` and passes through every other
+event. Findings fail the pushed commit's `verify` run, and GitHub's failed-run
+email is the notification.
 
-- Gitleaks scans the pushed range of private repositories, where GitHub push
-  protection is unavailable without paid Secret Protection. Public
-  repositories rely on GitHub secret scanning and push protection; pass
-  `gitleaks: true` to scan them anyway.
-- Actionlint and Zizmor run only when the range changes `.github/`, action
+- Gitleaks scans the pushed range of private repositories. Public
+  repositories use GitHub secret scanning and push protection; pass
+  `gitleaks: true` to scan them too.
+- Actionlint and Zizmor run when the range changes `.github/`, action
   metadata, Zizmor configuration, or ShellCheck configuration.
 - Manual dispatch, a new branch, or a previous head that is not an ancestor
   scans full history and always lints.
@@ -37,9 +35,9 @@ Linux runners use the digest-pinned scanner images, which Renovate tracks.
 macOS runners install the scanners from Homebrew. Pass `zizmor-args` for
 documented needs such as `--no-online-audits`.
 
-There are no pull-request or scheduled scans: every change reaches the default
-branch as a push, and new advisories for pinned dependencies arrive as
-Dependabot alerts and Renovate pull requests.
+Every change reaches the default branch as a push, so the push scan covers
+merges too. New advisories for pinned dependencies arrive as Dependabot alerts
+and Renovate pull requests.
 
 ## Pinning
 
