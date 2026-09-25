@@ -26,37 +26,59 @@ permissions:
   contents: read
 
 jobs:
-  gitleaks:
-    name: Gitleaks
-    outputs:
-      workflows: ${{ steps.changes.outputs.workflows }}
+  scan:
+    name: Scan
     runs-on: ${{ inputs.runner }}
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
       - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
-        if: github.event_name == 'pull_request'
         id: changes
         with:
           script: |
-            const base = context.payload.pull_request.base.sha;
-            if (!/^[0-9a-f]{40}$/.test(base)) {
-              throw new Error('Invalid pull request base SHA');
+            const sha = /^[0-9a-f]{40}$/;
+            let logOpts = '--all';
+            let diffRange;
+            if (context.eventName === 'pull_request') {
+              const base = context.payload.pull_request.base.sha;
+              if (!sha.test(base)) {
+                throw new Error('Invalid pull request base SHA');
+              }
+              logOpts = `${base}..HEAD`;
+              diffRange = `${base}...HEAD`;
+            } else if (context.eventName === 'push') {
+              const before = context.payload.before;
+              if (!sha.test(before)) {
+                throw new Error('Invalid push before SHA');
+              }
+              const { exitCode } = await exec.getExecOutput('git', [
+                'merge-base', '--is-ancestor', before, 'HEAD',
+              ], { ignoreReturnCode: true, silent: true });
+              if (exitCode === 0) {
+                logOpts = `${before}..HEAD`;
+                diffRange = `${before}..HEAD`;
+              }
+            }
+            core.setOutput('log-opts', logOpts);
+            if (!diffRange) {
+              core.setOutput('workflows', 'true');
+              return;
             }
             const { stdout } = await exec.getExecOutput('git', [
-              'diff', '--name-only', '-z', '--no-renames', `${base}...HEAD`, '--',
+              'diff', '--name-only', '-z', '--no-renames', diffRange, '--',
             ], { silent: true });
             const workflows = stdout.split('\0').some(path =>
               path.startsWith('.github/') ||
               /(^|\/)(action\.ya?ml|\.?zizmor\.ya?ml|\.shellcheckrc)$/.test(path)
             );
             core.setOutput('workflows', String(workflows));
-      - name: Scan Git history
+      - name: Scan Git history with Gitleaks
+        if: ${{ !cancelled() }}
         env:
-          LOG_OPTS: ${{ github.event_name == 'pull_request' && format('{0}..HEAD', github.event.pull_request.base.sha) || '--all' }}
+          LOG_OPTS: ${{ steps.changes.outputs.log-opts || '--all' }}
         run: |
           set -euo pipefail
           log="$(docker run --rm --network none -v "$PWD:/repo:ro" \
@@ -78,49 +100,20 @@ jobs:
             echo "gitleaks scanned no commits" >&2
             exit 1
           fi
-
-  trufflehog:
-    name: TruffleHog
-    runs-on: ${{ inputs.runner }}
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - name: Scan for verified secrets
+      - name: Scan Git history with TruffleHog
+        if: ${{ !cancelled() }}
         run: |
           docker run --rm -v "$PWD:/repo:ro" \
             trufflesecurity/trufflehog:3.97.6@sha256:cc1a591e83fec7bf56f64c15beaaa5d8e3d179a4165a03a087d07165296ef7df \
             git file:///repo --no-update --fail --results=verified
-
-  actionlint:
-    name: Actionlint
-    needs: gitleaks
-    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.gitleaks.outputs.workflows != 'false') }}
-    runs-on: ${{ inputs.runner }}
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Lint workflows
+      - name: Lint workflows with Actionlint
+        if: ${{ !cancelled() && steps.changes.outputs.workflows != 'false' }}
         run: |
           docker run --rm -v "$PWD:/repo" --workdir /repo \
             rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
             -color
-
-  zizmor:
-    name: Zizmor
-    needs: gitleaks
-    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.gitleaks.outputs.workflows != 'false') }}
-    runs-on: ${{ inputs.runner }}
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Audit workflow security
+      - name: Audit workflow security with Zizmor
+        if: ${{ !cancelled() && steps.changes.outputs.workflows != 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ZIZMOR_EXTRA_ARGS: ${{ inputs.zizmor-args }}

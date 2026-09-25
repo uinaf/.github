@@ -9,19 +9,33 @@ security, contribution, or pull-request guidance.
 
 The shared scan's inputs are documented in
 [`scan.yml`](.github/workflows/scan.yml). A caller passing a custom `runner`
-label also lists it in `.github/actionlint.yaml`, or the Actionlint job rejects
+label also lists it in `.github/actionlint.yaml`, or the Actionlint step rejects
 its own workflows.
 
-Pull requests scan only commits outside the PR base with Gitleaks; its weekly
-and manual runs scan full history. TruffleHog retains full-history scans because
-its range traversal can stop before older PR commits when the base advances.
-Actionlint and Zizmor allocate runners only when a PR changes `.github/`,
-action metadata, Zizmor configuration, or ShellCheck configuration; weekly and manual runs always lint.
-Path detection uses a GitHub-owned action and reuses the Gitleaks checkout and
-runner. Shared workflow dependencies must remain compatible with adopters’
-selected-action policies without new permission exceptions. Detection failures fail
-Gitleaks and still run both linters. Required check names remain unchanged;
-job-level skips report success without allocating a runner.
+The scan is one job, reported as `scan / Scan`; that is the only scan check a
+ruleset requires. Its scanners share one checkout and runner, and each step runs
+even when an earlier one fails. Callers trigger it on pull requests, pushes to
+the default branch, a weekly schedule, and manual dispatch.
+
+Gitleaks scans only commits outside the PR base on pull requests and only the
+pushed range on pushes; when the push's previous head is missing or not an
+ancestor, it scans full history. Weekly and manual runs scan full history.
+TruffleHog retains full-history scans because its range traversal can stop
+before older PR commits when the base advances. Actionlint and Zizmor run only
+when the scanned range changes `.github/`, action metadata, Zizmor
+configuration, or ShellCheck configuration; weekly and manual runs always lint.
+Detection failures fail the job, fall back to a full Gitleaks scan, and still
+run both linters.
+
+Callers skip push runs whose head commit GitHub committed (`web-flow`), which
+are pull request merges the pull request scan already covered. Direct pushes and
+bot writebacks are scanned after they land. Web edits on the default branch are
+also committed by `web-flow`, so only the weekly full scan covers them. Callers
+cancel superseded runs for pull requests only and give every other run its own
+concurrency group, so no pushed range is cancelled unscanned. A caller whose
+release workflow already calls the scan on every default-branch push omits the
+push trigger. The [self-caller](.github/workflows/self-scan.yml) is the
+template.
 
 Renovate uses the shared organization preset and tracks the four scanner image
 tags and digests in `scan.yml`; Zizmor stays at 1.28.0 or newer
