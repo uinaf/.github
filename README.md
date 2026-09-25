@@ -12,8 +12,8 @@ The shared scan's inputs are documented in
 label also lists it in `.github/actionlint.yaml`, or the Actionlint step rejects
 its own workflows.
 
-The scan is one job, reported as `scan / Scan`; that is the only scan check a
-ruleset requires. Its scanners share one checkout and runner, and each step runs
+The scan is one job, reported as `scan / Scan`. It is advisory: no ruleset
+requires it, so a scan never blocks a merge or a push. Its scanners share one checkout and runner, and each step runs
 even when an earlier one fails. Callers trigger it on pull requests, pushes to
 the default branch, a weekly schedule, and manual dispatch.
 
