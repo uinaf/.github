@@ -7,40 +7,39 @@ Fallback community-health files for repositories owned by uinaf.
 Repository-local files take precedence when a project needs more specific
 security, contribution, or pull-request guidance.
 
-The shared scan's inputs are documented in
-[`scan.yml`](.github/workflows/scan.yml). A caller passing a custom `runner`
-label also lists it in `.github/actionlint.yaml`, or the Actionlint step rejects
-its own workflows.
+## Scan
 
-The scan is one job, reported as `scan / Scan`. It is advisory: no ruleset
-requires it, so a scan never blocks a merge or a push. Its scanners share one checkout and runner, and each step runs
-even when an earlier one fails. Callers trigger it on pull requests, pushes to
-the default branch, a weekly schedule, and manual dispatch.
+[`actions/scan`](.github/actions/scan/action.yml) is the push-time scan. Callers
+add it as the last step of their existing `verify` job, after a checkout, so it
+costs no runner of its own:
 
-Gitleaks scans only commits outside the PR base on pull requests and only the
-pushed range on pushes; when the push's previous head is missing or not an
-ancestor, it scans full history. Weekly and manual runs scan full history.
-TruffleHog retains full-history scans because its range traversal can stop
-before older PR commits when the base advances. Actionlint and Zizmor run only
-when the scanned range changes `.github/`, action metadata, Zizmor
-configuration, or ShellCheck configuration; weekly and manual runs always lint.
-Detection failures fail the job, fall back to a full Gitleaks scan, and still
-run both linters.
+```yaml
+- uses: uinaf/.github/.github/actions/scan@<sha> # vX.Y.Z
+```
 
-Callers skip push runs whose head commit GitHub committed (`web-flow`), which
-are pull request merges the pull request scan already covered. Direct pushes and
-bot writebacks are scanned after they land. Web edits on the default branch are
-also committed by `web-flow`, so only the weekly full scan covers them. Callers
-cancel superseded runs for pull requests only and give every other run its own
-concurrency group, so no pushed range is cancelled unscanned. A caller whose
-release workflow already calls the scan on every default-branch push omits the
-push trigger. The [self-caller](.github/workflows/self-scan.yml) is the
-template.
+It acts only on `push` and `workflow_dispatch`; on pull requests it exits at
+once, so it never blocks a merge. Findings fail the pushed commit's `verify`
+run, and GitHub's failed-run email is the notification. No ruleset requires it
+to pass before a push.
 
-Renovate uses the shared organization preset and tracks the four scanner image
-tags and digests in `scan.yml`; Zizmor stays at 1.28.0 or newer
-(GHSA-f42p-wjw5-97qh). Digest-only updates remain manual under that preset.
-Image tags provide update metadata; execution remains pinned by digest.
+- Gitleaks scans the pushed range of private repositories, where GitHub push
+  protection is unavailable without paid Secret Protection. Public
+  repositories rely on GitHub secret scanning and push protection; pass
+  `gitleaks: true` to scan them anyway.
+- Actionlint and Zizmor run only when the range changes `.github/`, action
+  metadata, Zizmor configuration, or ShellCheck configuration.
+- Manual dispatch, a new branch, or a previous head that is not an ancestor
+  scans full history and always lints.
+- The action deepens a shallow, credential-less checkout with the job token
+  until the previous head resolves.
+
+Linux runners use the digest-pinned scanner images, which Renovate tracks.
+macOS runners install the scanners from Homebrew. Pass `zizmor-args` for
+documented needs such as `--no-online-audits`.
+
+There are no pull-request or scheduled scans: every change reaches the default
+branch as a push, and new advisories for pinned dependencies arrive as
+Dependabot alerts and Renovate pull requests.
 
 ## Pinning
 
@@ -51,7 +50,7 @@ comment, and the [shared Renovate preset](https://github.com/uinaf/renovate-conf
 moves the pins:
 
 ```yaml
-uses: uinaf/.github/.github/workflows/scan.yml@168dfda80c93edc6c7085675e0982e32e2229c97 # v1.0.2
+uses: uinaf/.github/.github/actions/scan@<sha> # vX.Y.Z
 ```
 
 Zizmor's `ref-version-mismatch` audit fails a pin whose comment names a
@@ -68,7 +67,7 @@ pin carries.
 
 [`release-npm.yml`](.github/workflows/release-npm.yml) publishes an npm package
 with semantic-release and npm trusted publishing. The caller keeps its own
-verify and scan jobs and its own workflow filename, because npm's trusted
+verify job and its own workflow filename, because npm's trusted
 publisher configuration checks the calling workflow's name. The App client id
 and private key live on the caller's `release` Environment. A caller cannot
 pass an Environment secret through `workflow_call`; it passes the name, and
@@ -83,7 +82,7 @@ semantic-release runs at the repository root.
 
 ```yaml
 release:
-  needs: [verify, scan]
+  needs: [verify]
   permissions:
     contents: read
     id-token: write
@@ -111,5 +110,5 @@ repository.
 ## Verify
 
 Run changed workflow checks locally with `mise run verify`. Before handoff, run
-the exhaustive gate with `mise run --force verify`. The repository self-caller
-runs the shared scan workflow at the pull request's merge commit.
+the exhaustive gate with `mise run --force verify`. The repository's own
+`verify` job runs that gate on pull requests and the scan action on pushes.

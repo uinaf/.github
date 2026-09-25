@@ -6,12 +6,12 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Versioned and digest-pinned scanner images used by shell docker run commands",
+      "description": "Versioned and digest-pinned scanner images used by the scan action's docker run commands",
       "managerFilePatterns": [
-        "/^\\.github/workflows/scan\\.yml$/"
+        "/^\\.github/actions/scan/action\\.yml$/"
       ],
       "matchStrings": [
-        "(?<depName>zricethezav/gitleaks|trufflesecurity/trufflehog|rhysd/actionlint|ghcr\\.io/zizmorcore/zizmor):(?<currentValue>[^\\s@]+)@(?<currentDigest>sha256:[a-f0-9]{64})"
+        "(?<depName>zricethezav/gitleaks|rhysd/actionlint|ghcr\\.io/zizmorcore/zizmor):(?<currentValue>[^\\s@]+)@(?<currentDigest>sha256:[a-f0-9]{64})"
       ],
       "datasourceTemplate": "docker",
       "versioningTemplate": "docker"
