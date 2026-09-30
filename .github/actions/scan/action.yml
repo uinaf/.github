@@ -46,17 +46,17 @@ runs:
         if [ "$RUNNER_OS" = Linux ]; then
           docker run --rm --network none -v "$PWD:/repo:ro" \
             zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
-            git /repo --log-opts="$LOG_OPTS" --redact --no-banner
+            git /repo --log-opts="$LOG_OPTS" --redact --no-banner --verbose
         else
           brew install --quiet gitleaks
-          gitleaks git . --log-opts="$LOG_OPTS" --redact --no-banner
+          gitleaks git . --log-opts="$LOG_OPTS" --redact --no-banner --verbose
         fi
     - name: Lint workflows with Actionlint
       if: ${{ !cancelled() && steps.plan.outputs.workflows == 'true' }}
       shell: bash
       run: |
         if [ "$RUNNER_OS" = Linux ]; then
-          docker run --rm -v "$PWD:/repo" --workdir /repo \
+          docker run --rm --network none -v "$PWD:/repo:ro" --workdir /repo \
             rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
             -color
         else
@@ -70,9 +70,10 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
         ZIZMOR_ARGS: ${{ inputs.zizmor-args }}
       run: |
+        set -f
         # shellcheck disable=SC2086
         if [ "$RUNNER_OS" = Linux ]; then
-          docker run --rm -e GH_TOKEN -v "$PWD:/repo" \
+          docker run --rm -e GH_TOKEN -v "$PWD:/repo:ro" \
             ghcr.io/zizmorcore/zizmor:1.29.0@sha256:863026d54f91271b10b60b67ad8054cb37120167e162482597db102b3026a284 \
             $ZIZMOR_ARGS /repo
         else
