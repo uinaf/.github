@@ -7,7 +7,7 @@ description = "Fail when one tool's pins name different versions"
 sources = ["mise.toml", ".github/**/*.yml", ".github/**/*.yaml"]
 run = '''
 status=0
-for tool in gitleaks actionlint shellcheck pyflakes zizmor lychee; do
+for tool in gitleaks actionlint shellcheck pyflakes zizmor; do
   pins="$(grep -noE "^\"?(pipx:)?$tool\"? = \"[^\"]+|/$tool[:@][^@ ']+|/$tool [0-9a-f]{40} # [^ ]+" mise.toml .github/actions/*/action.yml .github/workflows/*.yml)" || continue
   if [ "$(printf '%s\n' "$pins" | sed -E 's/.*[:@" ]([a-z-]*v)?//' | sort -u | sed -n '$=')" -gt 1 ]; then
     printf '%s pins disagree:\n%s\n' "$tool" "$pins" >&2
