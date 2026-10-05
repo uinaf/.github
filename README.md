@@ -44,6 +44,27 @@ Every change reaches the default branch as a push, so the push scan covers
 merges too. New advisories for pinned dependencies arrive as Dependabot alerts
 and Renovate pull requests.
 
+A concurrency group keeps one pending run and cancels it when a newer one
+arrives, so a shared push group leaves a pushed range unscanned. The caller's
+`verify` workflow groups pull-request runs by ref and gives every other run its
+own group:
+
+```yaml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+```
+
+That group no longer serializes release, publish, or deploy jobs in the same
+workflow, so each takes a job-level `release-${{ github.repository }}-main`
+group with `cancel-in-progress: false` and `queue: max` and checks out
+`github.sha`, as [`release-npm.yml`](.github/workflows/release-npm.yml) does.
+Actionlint 1.7.12 rejects `queue`; scope an ignore to those files, as this
+repository's [`.github/actionlint.yaml`](.github/actionlint.yaml) does.
+gh-setup's
+[runner cost](https://github.com/uinaf/ffss/blob/main/skills/gh-setup/references/runner-cost.md)
+owns these rules and their reasons.
+
 ## Pinning
 
 Every push to `main` that carries a releasable Conventional Commit tags a
