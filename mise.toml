@@ -2,6 +2,21 @@
 actionlint = "1.7.12"
 "pipx:zizmor" = "1.30.1"
 
+[tasks.verify-pins]
+description = "Fail when one tool's pins name different versions"
+sources = ["mise.toml", ".github/**/*.yml", ".github/**/*.yaml"]
+run = '''
+status=0
+for tool in gitleaks actionlint zizmor lychee; do
+  pins="$(grep -noE "^\"?(pipx:)?$tool\"? = \"[^\"]+|/$tool[:@][^@ ']+" mise.toml .github/actions/*/action.yml .github/workflows/*.yml)" || continue
+  if [ "$(printf '%s\n' "$pins" | sed -E 's/.*[:@"]([a-z-]*v)?//' | sort -u | sed -n '$=')" -gt 1 ]; then
+    printf '%s pins disagree:\n%s\n' "$tool" "$pins" >&2
+    status=1
+  fi
+done
+exit "$status"
+'''
+
 [tasks.verify-actions]
 description = "Lint and audit the shared workflows and actions"
 sources = [".github/**/*.yml", ".github/**/*.yaml"]
@@ -13,5 +28,5 @@ GH_TOKEN="$token" zizmor .github/workflows .github/actions
 
 [tasks.verify]
 description = "Verify changed organization policy"
-depends = ["verify-actions"]
+depends = ["verify-pins", "verify-actions"]
 run = "git diff --check"

@@ -31,9 +31,13 @@ email is the notification.
 - The action deepens a shallow, credential-less checkout with the job token
   until the previous head resolves.
 
-Linux runners use the digest-pinned scanner images, which Renovate tracks.
-macOS runners install the scanners from Homebrew. Pass `zizmor-args` for
-documented needs such as `--no-online-audits`.
+Each scanner runs at one version on every runner: Linux runners pull its
+digest-pinned image, and macOS runners download its release archive for the
+runner's architecture and check the pinned sha256 before running it.
+`mise.toml` pins the Actionlint and Zizmor that `mise run verify` uses.
+Renovate moves a scanner's image, archives, and `mise.toml` pin in one pull
+request, and `mise run verify` fails when they name different versions. Pass
+`zizmor-args` for documented needs such as `--no-online-audits`.
 
 Every change reaches the default branch as a push, so the push scan covers
 merges too. New advisories for pinned dependencies arrive as Dependabot alerts
