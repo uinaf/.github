@@ -27,6 +27,17 @@
       ],
       "datasourceTemplate": "github-release-attachments",
       "versioningTemplate": "regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
+    },
+    {
+      "customType": "regex",
+      "description": "Commit-pinned pyflakes the scan action fetches for macOS Actionlint",
+      "managerFilePatterns": [
+        "/^\\.github/actions/scan/action\\.yml$/"
+      ],
+      "matchStrings": [
+        "https://github\\.com/(?<depName>[\\w.-]+/[\\w.-]+) (?<currentDigest>[a-f0-9]{40}) # (?<currentValue>\\S+)"
+      ],
+      "datasourceTemplate": "github-tags"
     }
   ],
   "packageRules": [
@@ -57,6 +68,14 @@
       ],
       "groupName": "actionlint",
       "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "macOS Actionlint runs the pyflakes release the Actionlint image bundles, which Renovate cannot read, so a pyflakes update waits for dashboard approval until the image ships it",
+      "matchPackageNames": [
+        "PyCQA/pyflakes"
+      ],
+      "groupName": "pyflakes",
+      "dependencyDashboardApproval": true
     },
     {
       "description": "Zizmor pins move in one PR on one release age",
