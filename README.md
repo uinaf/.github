@@ -10,8 +10,7 @@ security, contribution, or pull-request guidance.
 ## Scan
 
 [`actions/scan`](.github/actions/scan/action.yml) is the push-time scan. Callers
-add it as the last step of their existing `verify` job, after a checkout, so it
-shares that job's runner:
+add it as the last step of their existing `verify` job, after a checkout:
 
 ```yaml
 - uses: uinaf/.github/.github/actions/scan@<sha> # vX.Y.Z
@@ -31,18 +30,9 @@ email is the notification.
 - The action deepens a shallow, credential-less checkout with the job token
   until the previous head resolves.
 
-Each scanner runs at one version on every runner: Linux runners pull its
-digest-pinned image, and macOS runners download its release archive for the
-runner's architecture and check the pinned sha256 before running it. macOS
-Actionlint runs with the ShellCheck and pyflakes releases its Linux image
-bundles; pyflakes publishes no release archives, so macOS fetches its tagged
-commit and runs it on the runner's `python3`. `mise.toml` pins the Actionlint
-and Zizmor that `mise run verify` uses. Renovate moves a scanner's image,
-archives, and `mise.toml` pin in one pull request, and `mise run verify` fails
-when they name different versions. Renovate cannot read which pyflakes the
-Actionlint image bundles, so a pyflakes update waits for approval on the
-Dependency Dashboard. Pass `zizmor-args` for documented needs such as
-`--no-online-audits`.
+Linux and macOS jobs run the same scanner versions, pinned in
+[`action.yml`](.github/actions/scan/action.yml). Pass `zizmor-args` for
+documented needs such as `--no-online-audits`.
 
 Every change reaches the default branch as a push, so the push scan covers
 merges too. New advisories for pinned dependencies arrive as Dependabot alerts
@@ -100,9 +90,7 @@ publisher configuration checks the calling workflow's name. The App client id
 and private key live on the caller's `release` Environment. A caller cannot
 pass an Environment secret through `workflow_call`; it passes the name, and
 the shared job, bound to the same Environment, receives the Environment's
-value. npm trusted publishing supports GitHub-hosted runners only, so the
-release job stays GitHub-hosted in repositories that otherwise run on
-Blacksmith.
+value.
 
 Inputs and defaults are documented in the workflow. The caller's `release`
 Environment must also define the `UINAF_CI_APP_CLIENT_ID` variable.
