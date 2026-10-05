@@ -45,9 +45,10 @@
       "minimumReleaseAge": "3 days"
     },
     {
-      "description": "Actionlint pins move in one PR on one release age",
+      "description": "Actionlint pins move in one PR on one release age, with the ShellCheck that macOS runs beside it",
       "matchPackageNames": [
-        "rhysd/actionlint"
+        "rhysd/actionlint",
+        "koalaman/shellcheck"
       ],
       "matchUpdateTypes": [
         "patch",

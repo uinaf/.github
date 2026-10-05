@@ -33,7 +33,8 @@ email is the notification.
 
 Each scanner runs at one version on every runner: Linux runners pull its
 digest-pinned image, and macOS runners download its release archive for the
-runner's architecture and check the pinned sha256 before running it.
+runner's architecture and check the pinned sha256 before running it. macOS
+Actionlint runs with the ShellCheck release its Linux image bundles.
 `mise.toml` pins the Actionlint and Zizmor that `mise run verify` uses.
 Renovate moves a scanner's image, archives, and `mise.toml` pin in one pull
 request, and `mise run verify` fails when they name different versions. Pass
