@@ -15,6 +15,70 @@
       ],
       "datasourceTemplate": "docker",
       "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "sha256-pinned release archives the scan action downloads on macOS, one per runner architecture",
+      "managerFilePatterns": [
+        "/^\\.github/actions/scan/action\\.yml$/"
+      ],
+      "matchStrings": [
+        "(?<depName>[\\w.-]+/[\\w.-]+)@(?<currentValue>v[^\\s']+) '[^']+' sha256:(?<currentDigest>[a-f0-9]{64})"
+      ],
+      "datasourceTemplate": "github-release-attachments",
+      "versioningTemplate": "regex:^v(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Gitleaks pins move in one PR on one release age: verify fails when a scanner's image, macOS archives, and mise pin disagree",
+      "matchPackageNames": [
+        "zricethezav/gitleaks",
+        "gitleaks/gitleaks"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor",
+        "major"
+      ],
+      "groupName": "gitleaks",
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Actionlint pins move in one PR on one release age, with the ShellCheck that macOS runs beside it",
+      "matchPackageNames": [
+        "rhysd/actionlint",
+        "koalaman/shellcheck"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor",
+        "major"
+      ],
+      "groupName": "actionlint",
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Zizmor pins move in one PR on one release age",
+      "matchPackageNames": [
+        "ghcr.io/zizmorcore/zizmor",
+        "zizmorcore/zizmor",
+        "zizmor"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor",
+        "major"
+      ],
+      "groupName": "zizmor",
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "ghcr.io gives Renovate no release timestamps, so a required timestamp would hold the Zizmor image back forever",
+      "matchPackageNames": [
+        "ghcr.io/zizmorcore/zizmor"
+      ],
+      "minimumReleaseAgeBehaviour": "timestamp-optional"
     }
   ],
   "platformAutomerge": true,
