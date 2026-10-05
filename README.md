@@ -34,11 +34,15 @@ email is the notification.
 Each scanner runs at one version on every runner: Linux runners pull its
 digest-pinned image, and macOS runners download its release archive for the
 runner's architecture and check the pinned sha256 before running it. macOS
-Actionlint runs with the ShellCheck release its Linux image bundles.
-`mise.toml` pins the Actionlint and Zizmor that `mise run verify` uses.
-Renovate moves a scanner's image, archives, and `mise.toml` pin in one pull
-request, and `mise run verify` fails when they name different versions. Pass
-`zizmor-args` for documented needs such as `--no-online-audits`.
+Actionlint runs with the ShellCheck and pyflakes releases its Linux image
+bundles; pyflakes publishes no release archives, so macOS fetches its tagged
+commit and runs it on the runner's `python3`. `mise.toml` pins the Actionlint
+and Zizmor that `mise run verify` uses. Renovate moves a scanner's image,
+archives, and `mise.toml` pin in one pull request, and `mise run verify` fails
+when they name different versions. Renovate cannot read which pyflakes the
+Actionlint image bundles, so a pyflakes update waits for approval on the
+Dependency Dashboard. Pass `zizmor-args` for documented needs such as
+`--no-online-audits`.
 
 Every change reaches the default branch as a push, so the push scan covers
 merges too. New advisories for pinned dependencies arrive as Dependabot alerts
