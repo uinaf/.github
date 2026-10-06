@@ -43,15 +43,27 @@ runs:
       env:
         LOG_OPTS: ${{ steps.plan.outputs.log-opts }}
       run: |
+        # A checkout that borrows objects through alternates is unreadable in
+        # the container, so copy the borrowed objects into its own pack.
+        if [ -n "${GIT_ALTERNATE_OBJECT_DIRECTORIES:-}" ] || [ -s "$(git rev-parse --git-path objects/info/alternates)" ]; then
+          git repack -a -d -q
+        fi
+        err="$RUNNER_TEMP/gitleaks.err"
         if [ "$RUNNER_OS" = Linux ]; then
           docker run --rm --network none -v "$PWD:/repo:ro" \
             zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
-            git /repo --log-opts="$LOG_OPTS" --redact --no-banner --verbose
+            git /repo --log-opts="$LOG_OPTS" --redact --no-banner --verbose 2>"$err" || { cat "$err" >&2; exit 1; }
         else
           gitleaks="$("$GITHUB_ACTION_PATH/install.sh" gitleaks \
             ARM64 gitleaks/gitleaks@v8.30.1 'gitleaks_{version}_darwin_arm64.tar.gz' sha256:b40ab0ae55c505963e365f271a8d3846efbc170aa17f2607f13df610a9aeb6a5 \
             X64 gitleaks/gitleaks@v8.30.1 'gitleaks_{version}_darwin_x64.tar.gz' sha256:dfe101a4db2255fc85120ac7f3d25e4342c3c20cf749f2c20a18081af1952709)"
-          "$gitleaks" git . --log-opts="$LOG_OPTS" --redact --no-banner --verbose
+          "$gitleaks" git . --log-opts="$LOG_OPTS" --redact --no-banner --verbose 2>"$err" || { cat "$err" >&2; exit 1; }
+        fi
+        cat "$err" >&2
+        # Gitleaks exits 0 when git cannot read the history it was given.
+        if grep -q 'fatal:' "$err"; then
+          echo "::error::Gitleaks could not read the scanned history"
+          exit 1
         fi
     - name: Lint workflows with Actionlint
       if: ${{ !cancelled() && steps.plan.outputs.workflows == 'true' }}
