@@ -64,8 +64,7 @@ owns these rules and their reasons.
 Every push to `main` that carries a releasable Conventional Commit tags a
 release ([`release.yml`](.github/workflows/release.yml)). Callers pin the
 workflows and the action to that release's commit with the tag as the version
-comment, and the [shared Renovate preset](https://github.com/uinaf/renovate-config)
-moves the pins:
+comment, and the [shared Renovate preset](#renovate) moves the pins:
 
 ```yaml
 uses: uinaf/.github/.github/actions/scan@<sha> # vX.Y.Z
@@ -77,7 +76,30 @@ branch that has since moved, so branch annotations such as `# main` are out.
 Compatibility: removing an input, adding a required input, renaming an output,
 or changing a default that alters caller behavior is a breaking change and
 ships as a major (`feat!:` or a `BREAKING CHANGE` footer). The preset
-automerges patch and minor pins only; majors wait for a human in each caller.
+automerges patch and minor pins only; majors wait for dashboard approval and a
+human merge in each caller.
+
+## Renovate
+
+[`renovate-config.json`](renovate-config.json) is the shared uinaf Renovate
+policy. A repository opts in with:
+
+```json
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["github>uinaf/.github:renovate-config"]
+}
+```
+
+Daily window (00:00–05:59 Europe/Istanbul); three-day minimum release age, one
+day for digest-pinned container images and Actions, none for this repository's
+workflows and actions. Patch and minor updates group per manager and automerge
+by squash after checks pass; `python` and `node` runtimes move as one PR.
+Majors open only after approval on the Dependency Dashboard. Repositories
+without checks and digest-only updates stay manual. Native GitHub automerge is
+on; a repository without enforced required checks sets
+`"platformAutomerge": false`. `npm run verify` validates the preset and
+resolves its presets.
 This README describes `main`; read the tagged commit for the contract a given
 pin carries.
 

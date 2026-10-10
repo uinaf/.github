@@ -1,0 +1,11 @@
+{
+  "name": "uinaf-github",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "verify": "renovate-config-validator --strict renovate-config.json renovate.json && node scripts/resolve-presets.mjs renovate-config.json"
+  },
+  "devDependencies": {
+    "renovate": "44.140.0"
+  }
+}

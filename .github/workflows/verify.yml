@@ -31,4 +31,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: mise run --force verify
+      - if: ${{ github.event_name == 'pull_request' }}
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+      - name: Validate and resolve the shared Renovate preset
+        if: ${{ github.event_name == 'pull_request' }}
+        run: npm ci && npm run verify
       - uses: ./.github/actions/scan # zizmor: ignore[self-repository]
