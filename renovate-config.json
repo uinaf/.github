@@ -3,6 +3,7 @@
   "description": "uinaf shared Renovate policy: daily, three-day release age, patch and minor grouped and automerged after checks, majors behind dashboard approval, digest pinning.",
   "extends": [
     "config:recommended",
+    ":semanticCommitTypeAll(deps)",
     "docker:pinDigests",
     ":semanticCommits",
     "helpers:pinGitHubActionDigests"
@@ -149,7 +150,6 @@
       "versioningTemplate": "{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
     }
   ],
-  "semanticCommitType": "deps",
   "semanticCommitScope": null,
   "automerge": false,
   "platformAutomerge": true,
