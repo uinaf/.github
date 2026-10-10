@@ -141,7 +141,7 @@ downstream `if:` conditions keep boolean names.
 ## Default-branch checks
 
 Required checks constrain every update to the default branch, including direct
-pushes. Rulesets and their bypasses are owned by `uinaf/infra` (`tofu/github`);
+pushes. Rulesets and their bypasses are owned by `uinaf/infra` (`github/tofu`);
 approved writers need a recorded bypass in the ruleset covering their
 repository.
 
