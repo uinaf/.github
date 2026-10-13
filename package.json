@@ -6,6 +6,6 @@
     "verify": "renovate-config-validator --strict renovate-config.json renovate.json && node scripts/resolve-presets.mjs renovate-config.json"
   },
   "devDependencies": {
-    "renovate": "44.149.1"
+    "renovate": "44.149.3"
   }
 }
