@@ -105,7 +105,8 @@
       ],
       "matchUpdateTypes": [
         "patch",
-        "minor"
+        "minor",
+        "major"
       ],
       "groupName": "vite-plus toolchain"
     },
