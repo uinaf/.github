@@ -94,7 +94,9 @@ policy. A repository opts in with:
 Daily window (00:00–05:59 Europe/Istanbul); three-day minimum release age, one
 day for digest-pinned container images and Actions, none for this repository's
 workflows and actions. Patch and minor updates group per manager and automerge
-by squash after checks pass; `python` and `node` runtimes move as one PR.
+by squash after checks pass; `python` and `node` runtimes move as one PR, and
+so do `vite-plus`, `vitest`, and `@vitest/*`, since vite-plus pins an exact
+vitest.
 Majors open only after approval on the Dependency Dashboard. Repositories
 without checks and digest-only updates stay manual. Native GitHub automerge is
 on; a repository without enforced required checks sets
