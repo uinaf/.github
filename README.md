@@ -49,8 +49,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 ```
 
-That group no longer serializes release, publish, or deploy jobs in the same
-workflow, so each takes a job-level `release-${{ github.repository }}-main`
+Release, publish, and deploy jobs in that workflow each take a job-level `release-${{ github.repository }}-main`
 group with `cancel-in-progress: false` and `queue: max` and checks out
 `github.sha`, as [`release-npm.yml`](.github/workflows/release-npm.yml) does.
 Actionlint 1.7.12 rejects `queue`; scope an ignore to those files, as this
@@ -91,34 +90,24 @@ policy. A repository opts in with:
 }
 ```
 
-Daily window (00:00–05:59 Europe/Istanbul); three-day minimum release age, one
-day for digest-pinned container images and Actions, none for this repository's
-workflows and actions. Patch and minor updates group per manager and automerge
-by squash after checks pass; `python` and `node` runtimes move as one PR, and
-so do `vite-plus`, `vitest`, and `@vitest/*`, since vite-plus pins an exact
-vitest.
-Majors open only after approval on the Dependency Dashboard. Repositories
-without checks and digest-only updates stay manual. Native GitHub automerge is
-on; a repository without enforced required checks sets
-`"platformAutomerge": false`. `npm run verify` validates the preset and
-resolves its presets.
-This README describes `main`; read the tagged commit for the contract a given
-pin carries.
+Each package rule's `description` explains its schedule, release age,
+grouping, and automerge choice. Native GitHub automerge is on, so a repository
+without enforced required checks sets `"platformAutomerge": false`.
 
 ## Release
 
 [`release-npm.yml`](.github/workflows/release-npm.yml) publishes an npm package
 with semantic-release and npm trusted publishing. The caller keeps its own
 verify job and its own workflow filename, because npm's trusted
-publisher configuration checks the calling workflow's name. The App client id
-and private key live on the caller's `release` Environment. A caller cannot
+publisher configuration checks the calling workflow's name. The caller's
+`release` Environment holds the `UINAF_CI_APP_CLIENT_ID` variable and the
+`UINAF_CI_APP_PRIVATE_KEY` secret. A caller cannot
 pass an Environment secret through `workflow_call`; it passes the name, and
 the shared job, bound to the same Environment, receives the Environment's
 value.
 
-Inputs and defaults are documented in the workflow. The caller's `release`
-Environment must also define the `UINAF_CI_APP_CLIENT_ID` variable.
-semantic-release runs at the repository root.
+Inputs and defaults are documented in the workflow. semantic-release runs at
+the repository root.
 
 ```yaml
 release:
@@ -149,6 +138,8 @@ repository.
 
 ## Verify
 
-Run changed workflow checks locally with `mise run verify`. Before handoff, run
-the exhaustive gate with `mise run --force verify`. The repository's own
-`verify` job runs that gate on pull requests and the scan action on pushes.
+Run changed workflow checks locally with `mise run verify`; before handoff, run
+`mise run --force verify` and `npm run verify`, which validates the Renovate
+preset and resolves its presets. The repository's own `verify` job runs both
+on pull requests and the scan action on pushes. This README describes `main`;
+read the tagged commit for the contract a given pin carries.
