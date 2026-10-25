@@ -2,46 +2,32 @@
 
 # uinaf/.github
 
-Fallback community-health files for repositories owned by uinaf.
+Fallback community-health files and shared CI for uinaf repositories.
+Repository-local files take precedence.
 
-Repository-local files take precedence when a project needs more specific
-security, contribution, or pull-request guidance.
+## Pinning
+
+A push to `main` with a releasable Conventional Commit tags a release. Pin
+every workflow and action here to that release's commit, with the tag as the
+comment, and let the [Renovate preset](#renovate) move the pins:
+
+```yaml
+uses: uinaf/.github/.github/actions/scan@<sha> # vX.Y.Z
+```
+
+- Zizmor fails a comment that names a branch, such as `# main`.
+- Removing an input, adding a required input, renaming an output, or changing
+  a default that alters caller behavior ships as a major (`feat!:` or a
+  `BREAKING CHANGE` footer). Majors need a human merge in each caller.
 
 ## Scan
 
-[`actions/scan`](.github/actions/scan/action.yml) is the push-time scan. Callers
-add it as the last step of their existing `verify` job, after a checkout:
+Add [`actions/scan`](.github/actions/scan/action.yml) as the last step of the
+caller's `verify` job, after a checkout. Public repositories rely on GitHub
+secret scanning unless they pass `gitleaks: true`.
 
-```yaml
-- uses: uinaf/.github/.github/actions/scan@<sha> # vX.Y.Z
-```
-
-It scans on `push` and `workflow_dispatch` and passes through every other
-event. Findings fail the pushed commit's `verify` run, and GitHub's failed-run
-email is the notification.
-
-- Gitleaks scans the pushed range of private repositories. Public
-  repositories use GitHub secret scanning and push protection; pass
-  `gitleaks: true` to scan them too.
-- Actionlint and Zizmor run when the range changes `.github/`, action
-  metadata, Zizmor configuration, or ShellCheck configuration.
-- Manual dispatch, a new branch, or a previous head that is not an ancestor
-  scans full history and always lints.
-- The action deepens a shallow, credential-less checkout with the job token
-  until the previous head resolves.
-
-Linux and macOS jobs run the same scanner versions, pinned in
-[`action.yml`](.github/actions/scan/action.yml). Pass `zizmor-args` for
-documented needs such as `--no-online-audits`.
-
-Every change reaches the default branch as a push, so the push scan covers
-merges too. New advisories for pinned dependencies arrive as Dependabot alerts
-and Renovate pull requests.
-
-A concurrency group keeps one pending run and cancels it when a newer one
-arrives, so a shared push group leaves a pushed range unscanned. The caller's
-`verify` workflow groups pull-request runs by ref and gives every other run its
-own group:
+The scan covers each pushed range only if no newer run cancels it. Group the
+caller's `verify` runs like this:
 
 ```yaml
 concurrency:
@@ -49,39 +35,18 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 ```
 
-Release, publish, and deploy jobs in that workflow each take a job-level `release-${{ github.repository }}-main`
-group with `cancel-in-progress: false` and `queue: max` and checks out
-`github.sha`, as [`release-npm.yml`](.github/workflows/release-npm.yml) does.
-Actionlint 1.7.12 rejects `queue`; scope an ignore to those files, as this
-repository's [`.github/actionlint.yaml`](.github/actionlint.yaml) does.
-gh-setup's
+Release, publish, and deploy jobs in that workflow each take a job-level
+`release-${{ github.repository }}-main` group with `cancel-in-progress: false`
+and `queue: max`, and check out `github.sha`, as
+[`release-npm.yml`](.github/workflows/release-npm.yml) does. Actionlint
+1.7.12 rejects `queue`; scope an ignore to those files as
+[`.github/actionlint.yaml`](.github/actionlint.yaml) does. gh-setup's
 [runner cost](https://github.com/uinaf/ffss/blob/main/skills/gh-setup/references/runner-cost.md)
-owns these rules and their reasons.
-
-## Pinning
-
-Every push to `main` that carries a releasable Conventional Commit tags a
-release ([`release.yml`](.github/workflows/release.yml)). Callers pin the
-workflows and the action to that release's commit with the tag as the version
-comment, and the [shared Renovate preset](#renovate) moves the pins:
-
-```yaml
-uses: uinaf/.github/.github/actions/scan@<sha> # vX.Y.Z
-```
-
-Zizmor's `ref-version-mismatch` audit fails a pin whose comment names a
-branch that has since moved, so branch annotations such as `# main` are out.
-
-Compatibility: removing an input, adding a required input, renaming an output,
-or changing a default that alters caller behavior is a breaking change and
-ships as a major (`feat!:` or a `BREAKING CHANGE` footer). The preset
-automerges patch and minor pins only; majors wait for dashboard approval and a
-human merge in each caller.
+owns these rules.
 
 ## Renovate
 
-[`renovate-config.json`](renovate-config.json) is the shared uinaf Renovate
-policy. A repository opts in with:
+Opt in to the shared [`renovate-config.json`](renovate-config.json):
 
 ```json
 {
@@ -90,24 +55,10 @@ policy. A repository opts in with:
 }
 ```
 
-Each package rule's `description` explains its schedule, release age,
-grouping, and automerge choice. Native GitHub automerge is on, so a repository
-without enforced required checks sets `"platformAutomerge": false`.
+A repository without enforced required checks sets
+`"platformAutomerge": false`.
 
-## Release
-
-[`release-npm.yml`](.github/workflows/release-npm.yml) publishes an npm package
-with semantic-release and npm trusted publishing. The caller keeps its own
-verify job and its own workflow filename, because npm's trusted
-publisher configuration checks the calling workflow's name. The caller's
-`release` Environment holds the `UINAF_CI_APP_CLIENT_ID` variable and the
-`UINAF_CI_APP_PRIVATE_KEY` secret. A caller cannot
-pass an Environment secret through `workflow_call`; it passes the name, and
-the shared job, bound to the same Environment, receives the Environment's
-value.
-
-Inputs and defaults are documented in the workflow. semantic-release runs at
-the repository root.
+## Release an npm package
 
 ```yaml
 release:
@@ -120,26 +71,24 @@ release:
     UINAF_CI_APP_PRIVATE_KEY: ${{ secrets.UINAF_CI_APP_PRIVATE_KEY }}
 ```
 
+- Keep the caller's workflow filename: npm trusted publishing checks it.
+- The caller's `release` Environment holds the `UINAF_CI_APP_CLIENT_ID`
+  variable and the `UINAF_CI_APP_PRIVATE_KEY` secret.
+
 ## Changed paths
 
-[`actions/changes`](.github/actions/changes/action.yml) runs `paths-filter`
-with the checkout each event needs and accepts inline filters only, so a pull
-request cannot edit its own lane selection. Private callers set
-`full-history: "true"`. The action returns matched filter names as a JSON
-array; map them to job outputs with `contains(fromJSON(...), 'name')` so
-downstream `if:` conditions keep boolean names.
-
-## Default-branch checks
-
-Required checks constrain every update to the default branch, including direct
-pushes. Rulesets and their bypasses are owned by `uinaf/infra` (`github/tofu`);
-approved writers need a recorded bypass in the ruleset covering their
-repository.
+[`actions/changes`](.github/actions/changes/action.yml) takes inline filters
+and returns matched names as a JSON array. Private callers set
+`full-history: "true"`. Map names to job outputs with
+`contains(fromJSON(...), 'name')` so `if:` conditions stay boolean.
 
 ## Verify
 
-Run changed workflow checks locally with `mise run verify`; before handoff, run
-`mise run --force verify` and `npm run verify`, which validates the Renovate
-preset and resolves its presets. The repository's own `verify` job runs both
-on pull requests and the scan action on pushes. This README describes `main`;
-read the tagged commit for the contract a given pin carries.
+```bash
+mise run verify          # changed workflows
+mise run --force verify  # before handoff
+npm run verify           # Renovate preset
+```
+
+This README describes `main`; read the tagged commit for a given pin's
+contract.
