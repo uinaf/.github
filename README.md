@@ -60,7 +60,8 @@ A repository without enforced required checks sets
 
 Vite+ repositories with explicit Vitest or `@vitest/*` pins extend
 `github>uinaf/.github:renovate-vite-plus` instead. It derives component
-versions from Vite+ manifests. Standalone Vitest keeps the base preset.
+versions from the shared [Vite+ mapping](renovate-vite-plus-versions.json).
+Standalone Vitest keeps the base preset.
 
 ## Release an npm package
 
