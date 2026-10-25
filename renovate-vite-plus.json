@@ -42,7 +42,10 @@
       ],
       "overrideDatasource": "custom.vite-plus-component",
       "versioning": "npm",
-      "followTag": "latest"
+      "followTag": "latest",
+      "registryUrls": [
+        "https://registry.npmjs.org/vite-plus"
+      ]
     }
   ]
 }
