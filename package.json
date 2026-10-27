@@ -6,6 +6,6 @@
     "verify": "renovate-config-validator --strict renovate-config.json renovate-vite-plus.json renovate-vite-plus-versions.json renovate.json && node scripts/resolve-presets.mjs renovate-config.json renovate-vite-plus.json renovate-vite-plus-versions.json"
   },
   "devDependencies": {
-    "renovate": "44.178.3"
+    "renovate": "44.181.1"
   }
 }
