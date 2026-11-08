@@ -65,7 +65,11 @@ async function checkVitePlus(preset) {
       "dist-tags": { latest: "2.0.0" },
       versions: {
         "2.0.0": {
-          dependencies: { vite: "npm:@voidzero-dev/vite-plus-core@2.0.0", vitest: "6.0.0" },
+          dependencies: {
+            vite: "npm:@voidzero-dev/vite-plus-core@2.0.0",
+            vitest: "6.0.0",
+            oxlint: "=1.2.0",
+          },
         },
       },
       time: { "2.0.0": "2026-01-01T00:00:00.000Z" },
@@ -80,6 +84,8 @@ async function checkVitePlus(preset) {
       ["@vitest/coverage-v8", "6.0.0"],
       ["@vitest/coverage-istanbul", "6.0.0"],
       ["@vitest/browser-playwright", "6.0.0"],
+      ["oxlint", "1.2.0"],
+      ["@oxlint/plugins", "1.2.0"],
     ]) {
       const mapped = await rule(name);
       assert.equal(mapped.datasource, "custom.vite-plus-component");
@@ -107,6 +113,20 @@ async function checkVitePlus(preset) {
         null,
         `${name} must reject an invalid bundle`,
       );
+    }
+    const withoutOxlint = structuredClone(manifest);
+    delete withoutOxlint.versions["2.0.0"].dependencies.oxlint;
+    const withoutOxlintPath = join(directory, "without-oxlint.json");
+    await writeFile(withoutOxlintPath, JSON.stringify(withoutOxlint));
+    for (const [name, expected] of [
+      ["vitest", "6.0.0"],
+      ["@oxlint/plugins", undefined],
+    ]) {
+      const releases = await source.getReleases({
+        ...(await rule(name)),
+        registryUrl: `file://${withoutOxlintPath}`,
+      });
+      assert.equal(releases?.tags?.latest, expected, `${name} without a bundled Oxlint`);
     }
   } finally {
     GlobalConfig.set({ localDir: previousLocalDir });

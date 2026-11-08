@@ -58,10 +58,11 @@ Opt in to the shared [`renovate-config.json`](renovate-config.json):
 A repository without enforced required checks sets
 `"platformAutomerge": false`.
 
-Vite+ repositories with explicit Vitest or `@vitest/*` pins extend
-`github>uinaf/.github:renovate-vite-plus` instead. It derives component
-versions from the shared [Vite+ mapping](renovate-vite-plus-versions.json).
-Standalone Vitest keeps the base preset.
+Vite+ repositories with explicit Vitest, `@vitest/*`, `oxlint`, or
+`@oxlint/plugins` pins extend `github>uinaf/.github:renovate-vite-plus`
+instead. It derives component versions from the shared
+[Vite+ mapping](renovate-vite-plus-versions.json). Standalone Vitest and
+Oxlint keep the base preset.
 
 ## Release an npm package
 

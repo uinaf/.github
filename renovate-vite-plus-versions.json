@@ -4,16 +4,16 @@
   "customDatasources": {
     "vite-plus-component": {
       "transformTemplates": [
-        "{'latest': $.\"dist-tags\".latest, 'releases': $each(versions, function($m, $v) { {'parent': $v, 'core': $substringAfter($m.dependencies.vite, 'npm:@voidzero-dev/vite-plus-core@'), 'vitest': $m.dependencies.vitest, 'releaseTimestamp': $lookup($$.time, $v)} })}",
+        "{'latest': $.\"dist-tags\".latest, 'releases': $each(versions, function($m, $v) { {'parent': $v, 'core': $substringAfter($m.dependencies.vite, 'npm:@voidzero-dev/vite-plus-core@'), 'vitest': $m.dependencies.vitest, 'oxlint': $replace($m.dependencies.oxlint, /^=/, ''), 'releaseTimestamp': $lookup($$.time, $v)} })}",
         "{'latest': latest, 'releases': releases[$exists($match(parent, /^\\d+\\.\\d+\\.\\d+$/)) and $exists($match(core, /^\\d+\\.\\d+\\.\\d+$/)) and $exists($match(vitest, /^\\d+\\.\\d+\\.\\d+$/)) and $exists(releaseTimestamp)]}",
         "($assert($count(releases[parent = $$.latest]) = 1, 'Vite+ latest must have exact stable component versions and a timestamp'); $)",
-        "($field := '{{{packageName}}}' = 'vite-plus' ? 'parent' : '{{{packageName}}}' = '@voidzero-dev/vite-plus-core' ? 'core' : 'vitest'; {'tags': {'latest': $lookup(releases[parent = $$.latest], $field)}, 'sourceUrl': $field = 'vitest' ? 'https://github.com/vitest-dev/vitest' : 'https://github.com/voidzero-dev/vite-plus', 'releases': [releases.{'version': $lookup($, $field), 'releaseTimestamp': releaseTimestamp}]})"
+        "($field := '{{{packageName}}}' = 'vite-plus' ? 'parent' : '{{{packageName}}}' = '@voidzero-dev/vite-plus-core' ? 'core' : '{{{packageName}}}' in ['oxlint', '@oxlint/plugins'] ? 'oxlint' : 'vitest'; $bundled := releases[$exists($match($lookup($, $field), /^\\d+\\.\\d+\\.\\d+$/))]; $assert($count($bundled[parent = $$.latest]) = 1, 'Vite+ latest must bundle an exact stable ' & $field & ' version'); {'tags': {'latest': $lookup($bundled[parent = $$.latest], $field)}, 'sourceUrl': $field = 'vitest' ? 'https://github.com/vitest-dev/vitest' : $field = 'oxlint' ? 'https://github.com/oxc-project/oxc' : 'https://github.com/voidzero-dev/vite-plus', 'releases': [$bundled.{'version': $lookup($, $field), 'releaseTimestamp': releaseTimestamp}]})"
       ]
     }
   },
   "packageRules": [
     {
-      "description": "Keep the runner, core, coverage and Playwright provider on the versions bundled by Vite+.",
+      "description": "Keep the runner, core, coverage, Playwright provider, Oxlint and its plugin API on the versions bundled by Vite+.",
       "matchDatasources": [
         "npm",
         "custom.vite-plus-component"
@@ -24,7 +24,9 @@
         "vitest",
         "@vitest/coverage-v8",
         "@vitest/coverage-istanbul",
-        "@vitest/browser-playwright"
+        "@vitest/browser-playwright",
+        "oxlint",
+        "@oxlint/plugins"
       ],
       "groupName": "vite-plus toolchain",
       "separateMajorMinor": false,
