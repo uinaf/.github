@@ -31,6 +31,7 @@
       "groupName": "vite-plus toolchain",
       "separateMajorMinor": false,
       "internalChecksFilter": "none",
+      "prCreation": "not-pending",
       "overrideDatasource": "custom.vite-plus-component",
       "registryUrls": [
         "https://registry.npmjs.org/vite-plus"
