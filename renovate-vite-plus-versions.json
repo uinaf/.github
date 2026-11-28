@@ -39,6 +39,15 @@
       "versioning": "npm",
       "followTag": "latest",
       "groupSlug": "vite-plus-toolchain"
+    },
+    {
+      "description": "Move @effect/tsgo with the Vite+ toolchain: each tsgo release supports only the Oxlint versions current Vite+ bundles.",
+      "matchPackageNames": [
+        "@effect/tsgo"
+      ],
+      "groupName": "vite-plus toolchain",
+      "groupSlug": "vite-plus-toolchain",
+      "separateMajorMinor": false
     }
   ]
 }
