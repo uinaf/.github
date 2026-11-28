@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "uinaf shared Renovate policy: daily, one-day release age matching pnpm's default, patch and minor grouped and automerged after checks, majors behind dashboard approval, digest pinning.",
+  "description": "uinaf shared Renovate policy: daily, one-day release age matching pnpm's default, patch and minor grouped and automerged after checks, weekly lockfile maintenance, majors behind dashboard approval except GitHub Actions, OSV alerts, digest pinning.",
   "extends": [
     "config:recommended",
     ":semanticCommitTypeAll(deps)",
@@ -15,6 +15,16 @@
   "minimumReleaseAge": "1 day",
   "internalChecksFilter": "strict",
   "dependencyDashboard": { "enabled": true },
+  "configMigration": true,
+  "osvVulnerabilityAlerts": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "* 0-5 * * 1"
+    ],
+    "automerge": true,
+    "automergeType": "pr"
+  },
   "prConcurrentLimit": 10,
   "labels": [
     "dependencies"
@@ -125,7 +135,9 @@
         "github-actions"
       ],
       "matchPackageNames": [
-        "uinaf/.github"
+        "uinaf/.github",
+        "altaywtf/.github",
+        "putdotio/.github"
       ],
       "minimumReleaseAge": null,
       "schedule": [
@@ -148,6 +160,16 @@
       ],
       "dependencyDashboardApproval": true,
       "automerge": false
+    },
+    {
+      "description": "GitHub Actions and runner image majors open PRs without approval: they are one-line CI bumps that CI itself proves. They still merge by hand.",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "dependencyDashboardApproval": false
     }
   ],
   "customManagers": [
