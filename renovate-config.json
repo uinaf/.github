@@ -119,12 +119,16 @@
       "separateMajorMinor": false
     },
     {
-      "description": "Move Oxlint, its type-aware runner and @effect/tsgo together: each tsgo release supports only specific Oxlint versions. Repos on the renovate-vite-plus preset fold this group into the Vite+ toolchain, which bundles Oxlint.",
+      "description": "Move Oxlint, its type-aware runner, @effect/tsgo and the shared lint configs together: each tsgo release supports only specific Oxlint versions, and the configs name the rules a given Oxlint ships. Repos on the renovate-vite-plus preset fold this group into the Vite+ toolchain, which bundles Oxlint.",
       "matchPackageNames": [
         "oxlint",
         "oxlint-tsgolint",
         "@oxlint/*",
-        "@effect/tsgo"
+        "@effect/tsgo",
+        "@uinaf/oxlint-config",
+        "@uinaf/oxlint-plugin-no-comments",
+        "@cloudflare/oxlint-config",
+        "@nkzw/oxlint-config"
       ],
       "groupName": "oxlint toolchain",
       "groupSlug": "oxlint-toolchain",
