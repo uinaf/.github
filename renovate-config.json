@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "uinaf shared Renovate policy: daily, one-day release age matching pnpm's default, patch and minor grouped and automerged after checks, weekly lockfile maintenance, majors behind dashboard approval except GitHub Actions, OSV alerts, digest pinning.",
+  "description": "uinaf shared Renovate policy: daily, one-day release age matching pnpm's default, patch and minor grouped and automerged after checks, weekly lockfile maintenance, majors as PRs that merge by hand, OSV alerts, digest pinning.",
   "extends": [
     "config:recommended",
     ":semanticCommitTypeAll(deps)",
@@ -103,7 +103,7 @@
       "separateMajorMinor": false
     },
     {
-      "description": "Update Effect, its packages, and the frameworks pinned to one Effect version (foldkit, alchemy) together, since any one alone loads a second Effect; select no partially aged releases, and open the PR only once every member has aged, so pnpm's release-age check never fails it; the passed release-age check counts as success on branches whose CI runs only on PRs. Major updates still require approval.",
+      "description": "Update Effect, its packages, and the frameworks pinned to one Effect version (foldkit, alchemy) together, since any one alone loads a second Effect; select no partially aged releases, and open the PR only once every member has aged, so pnpm's release-age check never fails it; the passed release-age check counts as success on branches whose CI runs only on PRs. Majors in the group still merge by hand.",
       "matchPackageNames": [
         "effect",
         "@effect/*",
@@ -166,22 +166,11 @@
       "minimumReleaseAge": null
     },
     {
-      "description": "Majors open only after approval on the Dependency Dashboard and always merge by hand",
+      "description": "Majors open their own PRs without dashboard approval, so CI shows what breaks, and always merge by hand",
       "matchUpdateTypes": [
         "major"
       ],
-      "dependencyDashboardApproval": true,
       "automerge": false
-    },
-    {
-      "description": "GitHub Actions and runner image majors open PRs without approval: they are one-line CI bumps that CI itself proves. They still merge by hand.",
-      "matchManagers": [
-        "github-actions"
-      ],
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "dependencyDashboardApproval": false
     }
   ],
   "customManagers": [
