@@ -119,6 +119,18 @@
       "separateMajorMinor": false
     },
     {
+      "description": "Move Oxlint, its type-aware runner and @effect/tsgo together: each tsgo release supports only specific Oxlint versions. Repos on the renovate-vite-plus preset fold this group into the Vite+ toolchain, which bundles Oxlint.",
+      "matchPackageNames": [
+        "oxlint",
+        "oxlint-tsgolint",
+        "@oxlint/*",
+        "@effect/tsgo"
+      ],
+      "groupName": "oxlint toolchain",
+      "groupSlug": "oxlint-toolchain",
+      "separateMajorMinor": false
+    },
+    {
       "description": "Pin Actions and images by digest on the initial run without waiting for release age",
       "matchUpdateTypes": [
         "pin",
